@@ -87,5 +87,19 @@ npm install @react-navigation/drawer@latest react-native-reanimated@latest
 npm install react-native-vector-icons
 npm install react-native-elements
 
+npm install react-native-fetch-blob //file uploading
+
 cd android
 ./gradlew clean
+
+
+//=========================For ICONS ======================== // 
+npm install react-native-vector-icons
+app/build/gradle 
+
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle
+
+
+
+

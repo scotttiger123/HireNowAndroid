@@ -3,16 +3,11 @@ import { View, FlatList, Text, TouchableOpacity, StyleSheet, ScrollView, TextInp
 import { Card ,Button  } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useRoute ,useNavigation  } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import Modal from 'react-native-modal';
 import ComboBoxes from './ComboBoxes';
 
 const JobGrid = () => {
-//   const route = useRoute();
-//   // const { userName } = route.params;
-
-  
   
   
   const [selectedJobType, setSelectedJobType] = useState(null);
@@ -28,11 +23,12 @@ const JobGrid = () => {
   const [searchText, setSearchText] = useState('');
   const [locationText, setLocationText] = useState('');
   const [isLoading, setIsLoading] = useState(false); // Add isLoading state
-
+  const navigation = useNavigation();
   useEffect(() => { 
     fetchData();
   }, []);
   
+
   const fetchData = async () => {
     try {
       setIsLoading(true); // Set loading to true while searching
@@ -125,7 +121,7 @@ const JobGrid = () => {
       case '£21.00+/hour':
         return 21;
       case '£31.00+/hour':
-        return 31;
+        return 31;    
       default:
         return null;
     }
@@ -207,7 +203,11 @@ const JobGrid = () => {
               <ScrollView style={styles.descriptionContainer}>
                 <Text>{selectedJob.jobDescription}</Text>
               </ScrollView>
-              <Button title="Apply" onPress={closeModal} />
+              
+              <Button
+                title="Apply"
+                onPress={() => navigation.navigate('ApplyJobPage', { job: selectedJob })}
+              />
             </Card>
           )}
         </View>
