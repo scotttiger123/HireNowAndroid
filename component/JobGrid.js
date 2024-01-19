@@ -142,6 +142,7 @@ const JobGrid = () => {
     }
   };
   return (
+    
     <View style={{ flex: 1 }}>
       <View style={styles.inputContainer}> 
         
