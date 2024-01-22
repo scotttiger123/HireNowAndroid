@@ -299,10 +299,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#3498db', // Adjust the color as needed
     padding: 10,
     borderRadius: 5,
-    marginTop: 10,
     flexDirection: 'row',
+    marginTop:50,
     justifyContent: 'center',
     alignItems: 'center',
+
   },
 
   uploadButtonContainer: {

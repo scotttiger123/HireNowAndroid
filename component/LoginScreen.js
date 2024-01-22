@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ActivityIndicator, Modal } from 'react-native';
-import { WebView } from 'react-native-webview';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginPage = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -17,7 +17,8 @@ const LoginPage = ({ navigation }) => {
       const responseData = await response.json();
 
       if (responseData.success) {
-        console.log('Login successful:', responseData.user.name);
+        console.log('Login successful:', responseData);
+        await AsyncStorage.setItem('userId', responseData.user.id.toString());
 
         setModalMessage('Login successful. Welcome!');
         setModalVisible(true);
@@ -28,7 +29,8 @@ const LoginPage = ({ navigation }) => {
           
          
           if (responseData.user && responseData.user.name) {
-            navigation.navigate('JobGrid', { userName: responseData.user.name });
+            
+            navigation.navigate('JobGridStack', { userName: responseData.user.name , userId: responseData.user.id});
           }
     
 

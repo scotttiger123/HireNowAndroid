@@ -7,18 +7,19 @@ import LoginScreen from './component/LoginScreen';
 import JobGridStack from './component/DrawerStack'; // Import the JobGridStack component
 import JobDetailsScreen from './component/JobDetailsScreen'; // Import the JobGridStack component
 import ApplyJobPage from './component/ApplyJobPage';
+import AppliedJobGrid from './component/AppliedJobsGrid'; // Import the new page
 
-const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
 function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* <Stack.Screen name="Login" component={LoginScreen} /> */}
+        <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="JobGridStack" component={JobGridStack} />
         <Stack.Screen name="JobDetailsScreen" component={JobDetailsScreen} />
         <Stack.Screen name="ApplyJobPage" component={ApplyJobPage} />
+        <Stack.Screen name="AppliedJobGrid" component={AppliedJobGrid} />
       </Stack.Navigator>
     </NavigationContainer>
   );
