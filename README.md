@@ -100,6 +100,7 @@ app/build/gradle
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle
 
+//====https://www.youtube.com/watch?v=l3CZmXtEe_Y&t=178s==//
 
 
 

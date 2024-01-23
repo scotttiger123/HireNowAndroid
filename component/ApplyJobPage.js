@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import DocumentPicker from 'react-native-document-picker';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Import MaterialIcons from react-native-vector-icons
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ApplyJobPage = () => {
   const navigation = useNavigation();
@@ -84,7 +85,9 @@ const ApplyJobPage = () => {
       formData.append('cv', base64Data);
       formData.append('name', fileData.name);
       formData.append('type', fileData.type);
-
+      formData.append('job_id', job.id); 
+      const storedUserId = await AsyncStorage.getItem('userId');
+      formData.append('user_id', storedUserId); 
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -97,8 +100,8 @@ const ApplyJobPage = () => {
       if (response) {
         const responseData = await response.json();
         console.log('API response: ', responseData);
-        setModalMessage(`API response: ${responseData.message}`);
-      setModalVisible(true);
+        setModalMessage(`${responseData.message}`);
+        setModalVisible(true);
       } else {
         console.error('API request failed: ', response.status, response.statusText);
       }
@@ -399,7 +402,7 @@ const styles = StyleSheet.create({
   },
   tableLabel: {
     flex: 1,
-    fontSize: 14, // Adjusted font size
+    fontSize: 12, // Adjusted font size
     fontWeight: 'bold',
     marginRight: 10,
     backgroundColor: '#F2F2F2',
@@ -411,7 +414,7 @@ const styles = StyleSheet.create({
   },
   tableValue: {
     flex: 2,
-    fontSize: 14, // Adjusted font size
+    fontSize: 12, // Adjusted font size
     padding: 10,
     color: 'black',
     fontFamily: 'Tahoma',

@@ -43,7 +43,15 @@ const AppliedJobGrid = () => {
     };
 
     fetchAppliedJobs();
-  }, [userId]);
+
+    const unsubscribeFocus = navigation.addListener('focus', () => {
+      fetchAppliedJobs();
+    });
+    return () => {
+      unsubscribeFocus();
+    };
+
+  }, [userId],[navigation]);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity

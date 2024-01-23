@@ -203,6 +203,27 @@ const JobGrid = () => {
               <Card.Divider />
               <ScrollView style={styles.descriptionContainer}>
                 <Text>{selectedJob.jobDescription}</Text>
+
+                <Card.Divider style={styles.secondDivider} /> 
+         
+                <View style={styles.table}>
+          
+                    
+                    {renderTableRow('Positions', selectedJob.numPositions !== null ? selectedJob.numPositions : 'N/A')}
+                    {renderTableRow('Job Shift', selectedJob.job_shift !== null && selectedJob.job_shift !== 'N/A' ? selectedJob.job_shift : 'N/A')}
+                    {renderTableRow('Job Type', selectedJob.job_type !== null ? (selectedJob.job_type === 'full_time' ? 'Full Time' : (selectedJob.job_type === 'part_time' ? 'Part Time' : 'N/A')) : 'N/A')}
+                    {renderTableRow('Gender', selectedJob.genderPreference !== null ? selectedJob.genderPreference : 'N/A')}
+                    {renderTableRow('Minimum Education', selectedJob.qualification !== null ? selectedJob.qualification : 'N/A')}
+                    {renderTableRow('Career Level', selectedJob.careerLevel !== null ? selectedJob.careerLevel : 'N/A')}
+                    {renderTableRow('Experience', selectedJob.minExperience !== null && selectedJob.minExperience > 0 && selectedJob.maxExperience !== null && selectedJob.maxExperience > 0
+                      ? `${selectedJob.minExperience} to ${selectedJob.maxExperience}`
+                      : 'N/A')}
+                    {renderTableRow('Age', selectedJob.minAge !== null && selectedJob.minAge > 0 && selectedJob.maxAge !== null && selectedJob.maxAge > 0
+                      ? `${selectedJob.minAge} to ${selectedJob.maxAge}`
+                      : 'N/A')}
+                    {renderTableRow('Apply Before', selectedJob.apply_by_date !== null ? selectedJob.apply_by_date : 'N/A')}
+                    {renderTableRow('Posting Date', selectedJob.created_at !== null ? selectedJob.created_at : 'N/A')}
+                  </View>
               </ScrollView>
               
               <Button
@@ -217,11 +238,65 @@ const JobGrid = () => {
 
    );
 };
-
+const renderTableRow = (label, value) => (
+  <View style={styles.tableRow} key={label}>
+    <Text style={styles.tableLabel}>{label}</Text>
+    <Text style={styles.tableValue}>{value}</Text>
+  </View>
+);
 const styles = StyleSheet.create({
+  secondDivider: {
+    marginTop: 10, // Add the desired top margin
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  tableHeader: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: 'black',
+    backgroundColor: '#F2F2F2',
+    padding: 10,
+    fontFamily: 'Tohama',
+  },
+  tableLabel: {
+    flex: 1,
+    fontSize: 12, // Adjusted font size
+    fontWeight: 'bold',
+    marginRight: 10,
+    backgroundColor: '#F2F2F2',
+    padding: 10,
+    borderRightWidth: 1,
+    borderRightColor: '#ccc',
+    color: 'black',
+    fontFamily: 'Tahoma',
+  },
+  tableValue: {
+    flex: 2,
+    fontSize: 12, // Adjusted font size
+    padding: 10,
+    color: 'black',
+    fontFamily: 'Tahoma',
+  },
+  // Introduce new property for adjustable width
+  labelWidth: {
+    width: 100, // You can set this value as per your requirement
+  },
   card: {
     marginBottom: 10,
     borderRadius: 5, // Set the border radius for rounded corners
+    
     
   },
   modal: {
@@ -230,14 +305,15 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'white',
-    padding: 16,
+    padding: 10,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    height: '50%', 
+    height: '70%', 
   },
   descriptionContainer: {
-    maxHeight: 200, // Set the maximum height for the description
+    maxHeight: '70%', // Set the maximum height for the description
     borderRadius: 5,
+    marginBottom :10
   },
   closeButton: {
     position: 'absolute',
@@ -246,6 +322,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     borderRadius: 15,
     padding: 5,
+    zIndex:10,
   },
   inputContainer: {
     flexDirection: 'row',
