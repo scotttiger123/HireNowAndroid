@@ -4,6 +4,7 @@ import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { createDrawerNavigator, DrawerItem } from '@react-navigation/drawer';
 import JobGrid from './JobGrid';
 import AppliedJobsGrid from './AppliedJobsGrid';
+import Profile from './ProfileScreen';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -58,6 +59,15 @@ const JobGridStack = () => (
         drawerIcon: ({ color, size }) => <Icon name="search" size={size} color={color} />,
       }}
     />
+    <Drawer.Screen
+  name="My Profile"
+  component={Profile}
+  options={{
+    drawerLabel: 'My Profile',
+    drawerIcon: ({ color, size }) => <Icon name="person" size={size} color={color} />,
+  }}
+/>
+
     <Drawer.Screen
       name="Applied Jobs"
       component={AppliedJobsGrid}

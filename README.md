@@ -91,6 +91,15 @@ npm install react-native-fetch-blob //file uploading
 
 cd android
 ./gradlew clean
+./gradlew assemblerelease
+
+cd android
+./gradlew clean
+cd ..
+npx react-native run-android  // For new built after installation 
+
+
+//====https://www.youtube.com/watch?v=l3CZmXtEe_Y&t=178s==//
 
 
 //=========================For ICONS ======================== // 
@@ -100,7 +109,12 @@ app/build/gradle
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle
 
-//====https://www.youtube.com/watch?v=l3CZmXtEe_Y&t=178s==//
+
+
+//===== Gradle version Changed fronm 8 to 7.5 ===// 
+https://deksmond.medium.com/deprecated-gradle-features-were-used-in-this-build-making-it-incompatible-with-gradle-8-0-cdbe9f2fa628
+You Have to clear del data from android studio then reload app . npm run android .
+
 
 
 
