@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Modal, StyleSheet, TouchableOpacity, Image ,ScrollView} from 'react-native';
+
 import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 const ProfileScreen = () => {
   const [name, setName] = useState('Your Name');
@@ -38,36 +40,45 @@ const ProfileScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {/* User Information Box */}
       <View style={styles.userInfoContainer}>
-        <Text style={styles.header}>Profile Information</Text>
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Name:</Text>
-          <Text style={styles.info}>{name}</Text>
+  <Text style={styles.header}>Profile Information</Text>
+  <View style={styles.imageContainer}>
+    {!editingSection && (
+      <TouchableOpacity style={styles.imageButton} onPress={() => handleEdit('Profile Image')}>
+        <View style={styles.imageWrapper}>
+          <Image source={require('./images/default_profile.png')} style={styles.image} />
         </View>
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Email:</Text>
-          <Text style={styles.info}>{email}</Text>
-        </View>
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Phone:</Text>
-          <Text style={styles.info}>{phone}</Text>
-        </View>
-        {editingSection === 'Profile Information' && (
-          <Modal visible={isModalVisible} animationType="slide">
-            {/* ... (Edit Profile Modal content goes here) */}
-            <TouchableOpacity onPress={handleSave}>
-              <Text>Save</Text>
-            </TouchableOpacity>
-          </Modal>
-        )}
-        {!editingSection && (
-          <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Profile Information')}>
-            <Icon name="pencil" size={18} color="white" />
-          </TouchableOpacity>
-        )}
-      </View>
+      </TouchableOpacity>
+    )}
+  </View>
+  <View style={styles.fieldContainer}>
+    <Text style={styles.label}>Name:</Text>
+    <Text style={styles.info}>{name}</Text>
+  </View>
+  <View style={styles.fieldContainer}>
+    <Text style={styles.label}>Email:</Text>
+    <Text style={styles.info}>{email}</Text>
+  </View>
+  <View style={styles.fieldContainer}>
+    <Text style={styles.label}>Phone:</Text>
+    <Text style={styles.info}>{phone}</Text>
+  </View>
+  {editingSection === 'Profile Information' && (
+    <Modal visible={isModalVisible} animationType="slide">
+      {/* ... (Edit Profile Modal content goes here) */}
+      <TouchableOpacity onPress={handleSave}>
+        <Text>Save</Text>
+      </TouchableOpacity>
+    </Modal>
+  )}
+  {!editingSection && (
+    <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Profile Information')}>
+      <Icon name="pencil" size={18} color="white" />
+    </TouchableOpacity>
+  )}
+</View>
 
       {/* Summary Box */}
       <View style={styles.sectionContainer}>
@@ -182,11 +193,42 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         )}
       </View>
-    </View>
+      </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  imageContainer: {
+    alignItems: 'center', // Center the content horizontally
+    marginTop: 20, // Adjust the top margin as needed
+  },
+
+  imageButton: {
+    backgroundColor: '#cccccc',
+    padding: 5,
+    borderRadius: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+
+  imageWrapper: {
+    width: 120, // Adjust the size of the wrapper as needed
+    height: 120, // Adjust the size of the wrapper as needed
+    borderRadius: 60, // Half of the width and height to create a circle
+    backgroundColor: '#ccc', // Gray color for the circle
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  image: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 50,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8f8f8',

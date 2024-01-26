@@ -118,3 +118,14 @@ You Have to clear del data from android studio then reload app . npm run android
 
 
 
+====
+ncheep
+CUSTOMER
+ubaid rehman
+USERNAME
+Scotttigerpatloo
+
+
+
+
+
