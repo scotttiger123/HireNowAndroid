@@ -69,6 +69,7 @@ const ApplyJobPage = () => {
           const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/csrf-token');
           const data = await response.json();
           const csrfToken = data.csrf_token;
+          console.log("csrf",csrfToken);
           return csrfToken;
         } catch (error) {
           console.error('Error fetching CSRF token: ', error);

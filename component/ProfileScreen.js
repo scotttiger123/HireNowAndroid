@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, Modal, StyleSheet, TouchableOpacity, Image ,ScrollView} from 'react-native';
-
+import DocumentPicker from 'react-native-document-picker';
+import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
+import getCsrfToken from './csrfTokenUtil';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen = () => {
   const [name, setName] = useState('Your Name');
@@ -16,69 +18,121 @@ const ProfileScreen = () => {
   const [licenses, setLicenses] = useState('License X, License Y');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingSection, setEditingSection] = useState('');
+  const [selectedDocument, setSelectedDocument] = useState(null);
 
   const handleEdit = (section) => {
     setEditingSection(section);
     setIsModalVisible(true);
   };
 
-  const handleSave = () => {
-    // Save the updated information (you can implement the saving logic here)
-    console.log('Saving profile information:', {
-      name,
-      email,
-      phone,
-      summary,
-      workExperience,
-      education,
-      skills,
-      certifications,
-      licenses,
-    });
-    setIsModalVisible(false);
-    setEditingSection('');
+
+  
+
+  const handleDocumentSelectAndSave = async () => {
+    try {
+        const csrfToken = await getCsrfToken();
+        const result = await DocumentPicker.pick({
+          type: [DocumentPicker.types.allFiles],
+        });
+        const fileData = result[0];
+        const base64Data = await RNFetchBlob.fs.readFile(fileData.uri, 'base64');
+        const formData = new FormData();
+        formData.append('profile_image', base64Data);
+        formData.append('extension', fileData.type.split('/')[1]); // Append the file extension
+        
+        const storedUserId = await AsyncStorage.getItem('userId');
+        formData.append('user_id', storedUserId);
+
+        const apiUrl = 'https://jobs.dev.britmarketing.co.uk/api/save-profile-image';
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              'X-CSRF-TOKEN': csrfToken,
+            },
+            body: formData,
+          });
+
+      console.log(response);
+      if (!response) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      console.log(responseData);
+
+      // Update state with the selected document
+      setSelectedDocument(fileData.uri);
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        console.log('Document picking cancelled');
+      } else {
+        console.error('Error picking document or saving image:', err);
+      }
+    }
   };
 
   return (
     <ScrollView style={styles.container}>
       {/* User Information Box */}
       <View style={styles.userInfoContainer}>
-  <Text style={styles.header}>Profile Information</Text>
-  <View style={styles.imageContainer}>
-    {!editingSection && (
-      <TouchableOpacity style={styles.imageButton} onPress={() => handleEdit('Profile Image')}>
-        <View style={styles.imageWrapper}>
-          <Image source={require('./images/default_profile.png')} style={styles.image} />
-        </View>
-      </TouchableOpacity>
-    )}
-  </View>
-  <View style={styles.fieldContainer}>
-    <Text style={styles.label}>Name:</Text>
-    <Text style={styles.info}>{name}</Text>
-  </View>
-  <View style={styles.fieldContainer}>
-    <Text style={styles.label}>Email:</Text>
-    <Text style={styles.info}>{email}</Text>
-  </View>
-  <View style={styles.fieldContainer}>
-    <Text style={styles.label}>Phone:</Text>
-    <Text style={styles.info}>{phone}</Text>
-  </View>
-  {editingSection === 'Profile Information' && (
-    <Modal visible={isModalVisible} animationType="slide">
-      {/* ... (Edit Profile Modal content goes here) */}
-      <TouchableOpacity onPress={handleSave}>
-        <Text>Save</Text>
-      </TouchableOpacity>
-    </Modal>
-  )}
-  {!editingSection && (
-    <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Profile Information')}>
-      <Icon name="pencil" size={18} color="white" />
-    </TouchableOpacity>
-  )}
-</View>
+              <Text style={styles.header}>Profile Information</Text>
+              <View style={styles.imageContainer}>
+                {!selectedDocument ? (
+                  <TouchableOpacity
+                    style={styles.imageButton}
+                    onPress={handleDocumentSelectAndSave}
+                  >
+                    <View style={styles.imageWrapper}>
+                      <Image
+                        source={require('./images/default_profile.png')}
+                        style={styles.image}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.imageButton}
+                    onPress={handleDocumentSelectAndSave}
+                  >
+                    <View style={styles.imageWrapper}>
+                      <Image
+                        source={{ uri: selectedDocument }}
+                        style={styles.image}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+
+              
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>Name:</Text>
+                <Text style={styles.info}>{name}</Text>
+              </View>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>Email:</Text>
+                <Text style={styles.info}>{email}</Text>
+              </View>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>Phone:</Text>
+                <Text style={styles.info}>{phone}</Text>
+              </View>
+              {editingSection === 'Profile Information' && (
+                <Modal visible={isModalVisible} animationType="slide">
+                  {/* ... (Edit Profile Modal content goes here) */}
+                  <TouchableOpacity onPress={handleSave}>
+                    <Text>Save</Text>
+                  </TouchableOpacity>
+                </Modal>
+              )}
+              {!editingSection && (
+                <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Profile Information')}>
+                  <Icon name="pencil" size={18} color="white" />
+                </TouchableOpacity>
+              )}
+            </View>
 
       {/* Summary Box */}
       <View style={styles.sectionContainer}>
@@ -199,10 +253,9 @@ const ProfileScreen = () => {
 
 const styles = StyleSheet.create({
   imageContainer: {
-    alignItems: 'center', // Center the content horizontally
-    marginTop: 20, // Adjust the top margin as needed
+    alignItems: 'center',
+    marginTop: 20,
   },
-
   imageButton: {
     backgroundColor: '#cccccc',
     padding: 5,
@@ -211,19 +264,16 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
-    elevation: 5,
   },
-
   imageWrapper: {
-    width: 120, // Adjust the size of the wrapper as needed
-    height: 120, // Adjust the size of the wrapper as needed
-    borderRadius: 60, // Half of the width and height to create a circle
-    backgroundColor: '#ccc', // Gray color for the circle
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#ccc',
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   image: {
     width: '100%',
     height: '100%',

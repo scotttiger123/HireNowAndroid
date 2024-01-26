@@ -16,13 +16,17 @@ function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Login" component={LoginScreen} />
+        
+        <Stack.Screen name="Profile" component={ProfileScreen} /> 
         <Stack.Screen name="JobGridStack" component={JobGridStack} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        
         <Stack.Screen name="JobDetailsScreen" component={JobDetailsScreen} />
         <Stack.Screen name="ApplyJobPage" component={ApplyJobPage} />
         <Stack.Screen name="AppliedJobGrid" component={AppliedJobGrid} />
+        
         <Stack.Screen name="Registration" component={Register} />
-        <Stack.Screen name="Profile" component={ProfileScreen} /> 
+        
 
       </Stack.Navigator>
     </NavigationContainer>
