@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity, Image ,ScrollView} from 'react-native';
+import { View, Text, Modal, StyleSheet, TouchableOpacity, Image ,ScrollView,TextInput,ActivityIndicator } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -7,26 +7,35 @@ import getCsrfToken from './csrfTokenUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen = () => {
+  const [loading, setLoading] = useState(false);
   const [name, setName] = useState('Your Name');
   const [email, setEmail] = useState('your.email@example.com');
   const [phone, setPhone] = useState('123-456-7890');
+  const [city, setCity] = useState('123-456-7890');
+  const [postalCode, setPostalCode] = useState('postal C ');
+  const [headline, setHeadLine] = useState('headLine Cv Title');
+  
   const [summary, setSummary] = useState('Experienced professional with expertise in...');
   const [workExperience, setWorkExperience] = useState('Company A - Position A\nCompany B - Position B');
   const [education, setEducation] = useState('University X - Degree X\nCollege Y - Degree Y');
   const [skills, setSkills] = useState('Skill A, Skill B, Skill C');
   const [certifications, setCertifications] = useState('Certification A, Certification B');
   const [licenses, setLicenses] = useState('License X, License Y');
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingSection, setEditingSection] = useState('');
-  const [selectedDocument, setSelectedDocument] = useState(null);
-
-  const handleEdit = (section) => {
-    setEditingSection(section);
-    setIsModalVisible(true);
-  };
-
-
   
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingSection, setEditingSection] = useState(null);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const [profileInfo, setProfileInfo] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    city: '',
+    postalCode: '',
+    headline: '',
+    
+  });
 
   const handleDocumentSelectAndSave = async () => {
     try {
@@ -42,7 +51,7 @@ const ProfileScreen = () => {
         
         const storedUserId = await AsyncStorage.getItem('userId');
         formData.append('user_id', storedUserId);
-
+  
         const apiUrl = 'https://jobs.dev.britmarketing.co.uk/api/save-profile-image';
           const response = await fetch(apiUrl, {
             method: 'POST',
@@ -52,15 +61,15 @@ const ProfileScreen = () => {
             },
             body: formData,
           });
-
+  
       console.log(response);
       if (!response) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
+  
       const responseData = await response.json();
       console.log(responseData);
-
+  
       // Update state with the selected document
       setSelectedDocument(fileData.uri);
     } catch (err) {
@@ -71,11 +80,80 @@ const ProfileScreen = () => {
       }
     }
   };
+  const handleEdit = (section) => {
+    setEditingSection(section);
+    setInitialProfileData(); 
+    setIsModalVisible(true);
+  };
+  
+  const handleCancelEdit = () => {
+    setEditingSection(null); 
+    setIsModalVisible(false);
+  };
 
+
+  const handleSaveProfile = async () => {
+    try {
+      setLoading(true); // Set loading to true while saving
+      const csrfToken = await getCsrfToken();
+      const formData = new FormData();
+      const storedUserId = await AsyncStorage.getItem('userId');
+      
+      
+      formData.append('user_id', storedUserId);
+      formData.append('name', profileInfo.name);
+      formData.append('phone', profileInfo.phone);
+      
+      console.log(storedUserId);
+      const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-profile-info', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,
+      });
+      
+      const responseData = await response.json();
+
+      console.log(responseData);
+      if (!response) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      console.log(response);
+      setEditingSection(null);
+      setIsModalVisible(false);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving profile information:', error.message);
+    } finally {
+      setLoading(false); // Set loading back to false after save attempt
+    }
+  };
+  
+
+
+
+
+
+const setInitialProfileData = () => {
+  setProfileInfo({
+    name: name,
+    email: email,
+    phone: phone,
+    headline: headline,
+    postalCode: postalCode,
+  });
+};
+  
+
+ 
   return (
     <ScrollView style={styles.container}>
       {/* User Information Box */}
+      
       <View style={styles.userInfoContainer}>
+        
               <Text style={styles.header}>Profile Information</Text>
               <View style={styles.imageContainer}>
                 {!selectedDocument ? (
@@ -119,20 +197,78 @@ const ProfileScreen = () => {
                 <Text style={styles.label}>Phone:</Text>
                 <Text style={styles.info}>{phone}</Text>
               </View>
-              {editingSection === 'Profile Information' && (
-                <Modal visible={isModalVisible} animationType="slide">
-                  {/* ... (Edit Profile Modal content goes here) */}
-                  <TouchableOpacity onPress={handleSave}>
-                    <Text>Save</Text>
-                  </TouchableOpacity>
-                </Modal>
-              )}
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>city:</Text>
+                <Text style={styles.info}>{city}</Text>
+              </View>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>postal Code:</Text>
+                <Text style={styles.info}>{postalCode}</Text>
+              </View>
               {!editingSection && (
-                <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Profile Information')}>
-                  <Icon name="pencil" size={18} color="white" />
-                </TouchableOpacity>
-              )}
-            </View>
+  <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Profile Information')}>
+    <Icon name="pencil" size={18} color="white" />
+  </TouchableOpacity>
+)}
+
+      </View>
+          
+          
+        
+          {/* Edit Profile Modal */}
+      
+
+            <Modal visible={isModalVisible} animationType="slide" transparent>
+              <View style={styles.modalBackground}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalHeader}>Edit Profile Information</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="Headline / CV Title"
+                    value={profileInfo.headline}
+                    onChangeText={(text) => setProfileInfo({ ...profileInfo, headline: text })}
+                  />
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="Name"
+                    value={profileInfo.name}
+                    onChangeText={(text) => setProfileInfo({ ...profileInfo, name: text })}
+                  />
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="Phone"
+                    value={profileInfo.phone}
+                    onChangeText={(text) => setProfileInfo({ ...profileInfo, phone: text })}
+                  />
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="City"
+                    value={profileInfo.city}
+                    onChangeText={(text) => setProfileInfo({ ...profileInfo, city: text })}
+                  />
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="Postal Code"
+                    value={profileInfo.postalCode}
+                    onChangeText={(text) => setProfileInfo({ ...profileInfo, postalCode: text })}
+                  />
+                  <View style={styles.modalButtonsContainer}>
+                    <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={handleCancelEdit}>
+                      <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
+                      {loading ? (
+                        <ActivityIndicator size="large" color="#0000ff" />
+                      ) : (
+                        <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveProfile}>
+                          <Text style={styles.buttonText}>Save</Text>
+                        </TouchableOpacity>
+                      )}
+                
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
 
       {/* Summary Box */}
       <View style={styles.sectionContainer}>
@@ -251,7 +387,53 @@ const ProfileScreen = () => {
   );
 };
 
+
 const styles = StyleSheet.create({
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+  },
+  modalHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#FF6347', // Red color for cancel button
+  },
+  saveButton: {
+    backgroundColor: '#008000', // Green color for save button
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
   imageContainer: {
     alignItems: 'center',
     marginTop: 20,
@@ -329,11 +511,11 @@ const styles = StyleSheet.create({
   },
   editButton: {
     position: 'absolute',
-    top: 20,
-    right: 20,
-    backgroundColor: '#007BFF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    top: 10,
+    right: 10,
+    backgroundColor: '#164081',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
     borderRadius: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -344,6 +526,7 @@ const styles = StyleSheet.create({
   editButtonText: {
     color: 'white',
     fontWeight: 'bold',
+    fontSize: 14,
   },
   text: {
     color: '#333',
@@ -363,25 +546,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  editButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: '#164081',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  editButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
 });
 
 export default ProfileScreen;
+
