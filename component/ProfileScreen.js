@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { View, Text, Modal, StyleSheet, TouchableOpacity, Image ,ScrollView,TextInput,ActivityIndicator } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -7,16 +7,25 @@ import getCsrfToken from './csrfTokenUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen = () => {
+  const [headline, setHeadLine] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [city, setCity] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState('Your Name');
-  const [email, setEmail] = useState('your.email@example.com');
-  const [phone, setPhone] = useState('123-456-7890');
-  const [city, setCity] = useState('123-456-7890');
-  const [postalCode, setPostalCode] = useState('postal C ');
-  const [headline, setHeadLine] = useState('headLine Cv Title');
   
-  const [summary, setSummary] = useState('Experienced professional with expertise in...');
+  const [isSummaryModalVisible, setIsSummaryModalVisible] = useState(false);
+  const [summary, setSummary] = useState('');
+
   const [workExperience, setWorkExperience] = useState('Company A - Position A\nCompany B - Position B');
+  const [jobTitle, setJobTitle] = useState('');
+  const [company, setCompany] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [description, setDescription] = useState('');
+
   const [education, setEducation] = useState('University X - Degree X\nCollege Y - Degree Y');
   const [skills, setSkills] = useState('Skill A, Skill B, Skill C');
   const [certifications, setCertifications] = useState('Certification A, Certification B');
@@ -26,7 +35,9 @@ const ProfileScreen = () => {
   const [editingSection, setEditingSection] = useState(null);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isWorkExperienceModalVisible, setIsWorkExperienceModalVisible] = useState(false);
   
+
   const [profileInfo, setProfileInfo] = useState({
     name: '',
     email: '',
@@ -34,8 +45,110 @@ const ProfileScreen = () => {
     city: '',
     postalCode: '',
     headline: '',
-    
   });
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const csrfToken = await getCsrfToken();
+        const storedUserId = await AsyncStorage.getItem('userId');
+        await fetchDefaultProfileInfo(storedUserId, csrfToken);
+      } catch (error) {
+        console.error('Error fetching profile information:', error.message);
+      }
+    };
+  
+    fetchData();
+  }, []);
+  
+
+  const fetchDefaultProfileInfo = async (userId, csrfToken) => {
+    try {
+        const response = await fetch(`https://jobs.dev.britmarketing.co.uk/api/get-default-profile-info?user_id=${userId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+        });
+
+        if (!response) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const responseData = await response.json();
+        const profileData = responseData.data; // Accessing the nested 'data' object
+        
+        setHeadLine(profileData.headline);
+        setName(`${profileData.first_name} ${profileData.last_name}`);
+        setEmail(profileData.email);
+        setPhone(profileData.phone);
+        setCity(profileData.city);
+        setPostalCode(profileData.postal_code);
+        setSummary(profileData.summary);
+    
+        // Update profileInfo object with the fetched data
+        setProfileInfo({
+          ...profileInfo, // Preserve existing profileInfo properties
+          name: profileData.first_name,
+          email: profileData.email,
+          phone: profileData.phone,
+          headline: profileData.headline,
+          postalCode: profileData.postal_code,
+        });
+    } catch (error) {
+        console.error('Error fetching default profile information:', error.message);
+        throw error; // Propagate the error to the caller
+    }
+};
+
+const handleSaveWorkExperience = async () => {
+  try {
+    setLoading(true); // Set loading to true while saving
+    const csrfToken = await getCsrfToken();
+    const storedUserId = await AsyncStorage.getItem('userId');
+    const formData = new FormData();
+
+    formData.append('user_id', storedUserId);
+    formData.append('job_title', jobTitle);
+    formData.append('company', company);
+    formData.append('from_date', fromDate);
+    formData.append('to_date', toDate);
+    formData.append('description', description);
+
+    const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-work-experience', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      body: formData,
+    });
+
+    const responseData = await response.json();
+    console.log(responseData);
+
+    if (!response) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    console.log(response);
+
+    // Optionally, you can update the UI or perform any additional actions after saving the work experience
+
+    // Reset the form fields
+    setJobTitle('');
+    setCompany('');
+    setFromDate('');
+    setToDate('');
+    setDescription('');
+
+    setIsWorkExperienceModalVisible(false);
+  } catch (error) {
+    console.error('Error saving work experience:', error.message);
+  } finally {
+    setLoading(false); // Set loading back to false after save attempt
+  }
+};
+
 
   const handleDocumentSelectAndSave = async () => {
     try {
@@ -69,7 +182,7 @@ const ProfileScreen = () => {
   
       const responseData = await response.json();
       console.log(responseData);
-  
+      
       // Update state with the selected document
       setSelectedDocument(fileData.uri);
     } catch (err) {
@@ -82,7 +195,7 @@ const ProfileScreen = () => {
   };
   const handleEdit = (section) => {
     setEditingSection(section);
-    setInitialProfileData(); 
+    //setInitialProfileData(); 
     setIsModalVisible(true);
   };
   
@@ -96,13 +209,16 @@ const ProfileScreen = () => {
     try {
       setLoading(true); // Set loading to true while saving
       const csrfToken = await getCsrfToken();
-      const formData = new FormData();
       const storedUserId = await AsyncStorage.getItem('userId');
+      const formData = new FormData();
+      
       
       
       formData.append('user_id', storedUserId);
       formData.append('name', profileInfo.name);
       formData.append('phone', profileInfo.phone);
+      formData.append('headline', profileInfo.headline);
+      formData.append('postal_code', profileInfo.postalCode);
       
       console.log(storedUserId);
       const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-profile-info', {
@@ -115,12 +231,16 @@ const ProfileScreen = () => {
       });
       
       const responseData = await response.json();
-
       console.log(responseData);
+
       if (!response) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       console.log(response);
+
+      await fetchDefaultProfileInfo(storedUserId, csrfToken);
+  
+
       setEditingSection(null);
       setIsModalVisible(false);
       setIsEditing(false);
@@ -132,19 +252,48 @@ const ProfileScreen = () => {
   };
   
 
-
-
-
-
-const setInitialProfileData = () => {
-  setProfileInfo({
-    name: name,
-    email: email,
-    phone: phone,
-    headline: headline,
-    postalCode: postalCode,
-  });
-};
+  const capitalizeEachWord = (str) => {
+    return str
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+  
+  
+  const handleSaveSummary = async () => {
+    try {
+      setLoading(true);
+      const csrfToken = await getCsrfToken();
+      const storedUserId = await AsyncStorage.getItem('userId');
+      const formData = new FormData();
+      
+      formData.append('user_id', storedUserId);
+      formData.append('summary', summary);
+      
+      const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-summary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,
+      });
+      
+      const responseData = await response.json();
+  
+      if (!response) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      await fetchDefaultProfileInfo(storedUserId, csrfToken);
+  
+      setIsSummaryModalVisible(false);
+    } catch (error) {
+      console.error('Error saving summary:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   
 
  
@@ -183,28 +332,32 @@ const setInitialProfileData = () => {
                 )}
               </View>
 
+        
+              <View style={styles.fieldContainer}>
+                    <Text style={styles.label}>Name:</Text>
+                    <Text style={styles.info}>{capitalizeEachWord(profileInfo.name)}</Text>
+                  </View>
+                  <View style={styles.fieldContainer}>
+                    <Text style={styles.label}>Job Title:</Text>
+                    <Text style={styles.info}>{capitalizeEachWord(profileInfo.headline)}</Text>
+                  </View>
+                  <View style={styles.fieldContainer}>
+                    <Text style={styles.label}>Email:</Text>
+                    <Text style={styles.info}>{profileInfo.email}</Text>
+                  </View>
+                  <View style={styles.fieldContainer}>
+                    <Text style={styles.label}>Phone:</Text>
+                    <Text style={styles.info}>{profileInfo.phone}</Text>
+                  </View>
+                  <View style={styles.fieldContainer}>
+                    <Text style={styles.label}>City:</Text>
+                    <Text style={styles.info}>{capitalizeEachWord(profileInfo.city)}</Text>
+                  </View>
+                  <View style={styles.fieldContainer}>
+                    <Text style={styles.label}>Postal Code:</Text>
+                    <Text style={styles.info}>{profileInfo.postalCode}</Text>
+                  </View>
 
-              
-              <View style={styles.fieldContainer}>
-                <Text style={styles.label}>Name:</Text>
-                <Text style={styles.info}>{name}</Text>
-              </View>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.label}>Email:</Text>
-                <Text style={styles.info}>{email}</Text>
-              </View>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.label}>Phone:</Text>
-                <Text style={styles.info}>{phone}</Text>
-              </View>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.label}>city:</Text>
-                <Text style={styles.info}>{city}</Text>
-              </View>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.label}>postal Code:</Text>
-                <Text style={styles.info}>{postalCode}</Text>
-              </View>
               {!editingSection && (
   <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Profile Information')}>
     <Icon name="pencil" size={18} color="white" />
@@ -212,12 +365,7 @@ const setInitialProfileData = () => {
 )}
 
       </View>
-          
-          
-        
           {/* Edit Profile Modal */}
-      
-
             <Modal visible={isModalVisible} animationType="slide" transparent>
               <View style={styles.modalBackground}>
                 <View style={styles.modalContent}>
@@ -283,29 +431,110 @@ const setInitialProfileData = () => {
           </Modal>
         )}
         {!editingSection && (
-          <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Summary')}>
-            <Icon name="pencil" size={18} color="white" />
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.editButton} onPress={() => setIsSummaryModalVisible(true)}>
+              <Icon name="pencil" size={18} color="white" />
+            </TouchableOpacity>
         )}
+
+         {/* Summary Modal */}
+      <Modal visible={isSummaryModalVisible} animationType="slide" transparent>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalHeader}>Edit Summary</Text>
+            <TextInput
+              style={[styles.modalInput, { height: 100 }]} // Adjust the height as needed
+              placeholder="Enter summary"
+              multiline={true}
+              numberOfLines={4} // Adjust the number of lines as needed
+              value={summary}
+              onChangeText={setSummary}
+            />
+            <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity style={[styles.modalButton,styles.cancelButton]} onPress={() => setIsSummaryModalVisible(false)}>
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+                      {loading ? (
+                        <ActivityIndicator size="large" color="#0000ff" />
+                      ) : (
+                        <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveSummary}>
+                          <Text style={styles.buttonText}>Save</Text>
+                        </TouchableOpacity>
+                )}
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       </View>
 
       {/* Work Experience Box */}
       <View style={styles.sectionContainer}>
-        <Text style={styles.header}>Work Experience</Text>
-        <Text style={styles.text}>{workExperience}</Text>
-        {editingSection === 'Work Experience' && (
-          <Modal visible={isModalVisible} animationType="slide">
-            {/* ... (Edit Work Experience Modal content goes here) */}
-            <TouchableOpacity onPress={handleSave}>
-              <Text>Save</Text>
-            </TouchableOpacity>
-          </Modal>
-        )}
-        {!editingSection && (
-          <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Work Experience')}>
-            <Icon name="pencil" size={18} color="white" />
-          </TouchableOpacity>
-        )}
+          <Text style={styles.header}>Work Experience</Text>
+            <Text style={styles.text}>{workExperience}</Text>
+            {editingSection === 'Work Experience' && (
+              <Modal visible={isModalVisible} animationType="slide">
+                {/* ... (Edit Work Experience Modal content goes here) */}
+                <TouchableOpacity onPress={handleSave}>
+                  <Text>Save</Text>
+                </TouchableOpacity>
+              </Modal>
+            )}
+            {!editingSection && (
+              <TouchableOpacity style={styles.editButton} onPress={() => setIsWorkExperienceModalVisible(true)}>
+                <Icon name="pencil" size={18} color="white" />
+              </TouchableOpacity>
+            )}
+
+<Modal visible={isWorkExperienceModalVisible} animationType="slide" transparent>
+  <View style={styles.modalBackground}>
+    <View style={styles.modalContent}>
+      <Text style={styles.modalHeader}>Add Work Experience</Text>
+      <TextInput
+        style={styles.modalInput}
+        placeholder="Job Title*"
+        value={jobTitle}
+        onChangeText={setJobTitle}
+      />
+      <TextInput
+        style={styles.modalInput}
+        placeholder="Company"
+        value={company}
+        onChangeText={setCompany}
+      />
+      <View style={styles.dateInputContainer}>
+        <TextInput
+          style={[styles.modalInput, styles.dateInput]}
+          placeholder="From"
+          value={fromDate}
+          onChangeText={setFromDate}
+        />
+        <TextInput
+          style={[styles.modalInput, styles.dateInput]}
+          placeholder="To"
+          value={toDate}
+          onChangeText={setToDate}
+        />
+      </View>
+      <TextInput
+        style={[styles.modalInput, { height: 100 }]} // Adjust height for description
+        placeholder="Description"
+        multiline
+        numberOfLines={4}
+        value={description}
+        onChangeText={setDescription}
+      />
+      <View style={styles.modalButtonsContainer}>
+        <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setIsWorkExperienceModalVisible(false)}>
+          <Text style={styles.buttonText}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveWorkExperience}>
+          <Text style={styles.buttonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
+
       </View>
 
       {/* Education Box */}
