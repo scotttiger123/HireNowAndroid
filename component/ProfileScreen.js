@@ -5,6 +5,8 @@ import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import getCsrfToken from './csrfTokenUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+
 
 const ProfileScreen = () => {
   const [headline, setHeadLine] = useState('');
@@ -27,6 +29,26 @@ const ProfileScreen = () => {
   const [description, setDescription] = useState('');
 
   const [education, setEducation] = useState('University X - Degree X\nCollege Y - Degree Y');
+  
+    const [educationDetails, setEducationDetails] = useState({
+        level: '',
+        fieldOfStudy: '',
+        schoolName: '',
+        cityedu: '',
+        from: '',
+        to: '',
+    });
+   
+    
+  const [isEducationModalVisible, setIsEducationModalVisible] = useState(false);
+  const [level, setLevel] = useState('');
+  const [fieldOfStudy, setFieldOfStudy] = useState('');
+  const [schoolName, setSchoolName] = useState('');
+  const [cityedu, setCityedu] = useState('');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+
+
   const [skills, setSkills] = useState('Skill A, Skill B, Skill C');
   const [certifications, setCertifications] = useState('Certification A, Certification B');
   const [licenses, setLicenses] = useState('License X, License Y');
@@ -37,6 +59,76 @@ const ProfileScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isWorkExperienceModalVisible, setIsWorkExperienceModalVisible] = useState(false);
   
+  
+  const [showFromDatePicker, setShowFromDatePicker] = useState(false);
+  const [showToDatePicker, setShowToDatePicker] = useState(false);
+
+  
+  const handleSaveEducation = async () => {
+    
+    try {
+      setLoading(true); // Set loading to true while saving
+    
+      const csrfToken = await getCsrfToken();
+      const storedUserId = await AsyncStorage.getItem('userId');
+      const formData = new FormData();
+    
+      formData.append('user_id', storedUserId);
+      formData.append('level', level);
+      formData.append('field_of_study', fieldOfStudy);
+      formData.append('school_name', schoolName);
+      formData.append('city', city);
+      formData.append('from_date', fromDate);
+      formData.append('to_date', toDate);
+    
+      const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-education', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,
+      });
+    
+      const responseData = await response.json();
+    
+      if (!response) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+    
+      console.log(responseData);
+      await fetchDefaultProfileInfo(storedUserId, csrfToken);
+      
+      setIsEducationModalVisible(false);
+    } catch (error) {
+      console.error('Error saving education:', error.message);
+    } finally {
+      setLoading(false); // Set loading back to false after save attempt
+    }
+   
+  };  
+
+  // Function to handle opening the date picker for the 'from' date
+  const handleFromDatePress = () => {
+    setShowFromDatePicker(true);
+  };
+
+  // Function to handle opening the date picker for the 'to' date
+  const handleToDatePress = () => {
+    setShowToDatePicker(true);
+  };
+
+  // Function to handle date confirmation for the 'from' date
+  const handleFromDateConfirm = (date) => {
+    setFromDate(date.toISOString().split('T')[0]);
+    setShowFromDatePicker(false);
+  };
+
+  // Function to handle date confirmation for the 'to' date
+  const handleToDateConfirm = (date) => {
+    setToDate(date.toISOString().split('T')[0]);
+    setShowToDatePicker(false);
+  };
 
   const [profileInfo, setProfileInfo] = useState({
     name: '',
@@ -79,7 +171,7 @@ const ProfileScreen = () => {
         const profileData = responseData.data; // Accessing the nested 'data' object
         
         setHeadLine(profileData.headline);
-        setName(`${profileData.first_name} ${profileData.last_name}`);
+        setName(profileData.first_name);
         setEmail(profileData.email);
         setPhone(profileData.phone);
         setCity(profileData.city);
@@ -92,8 +184,13 @@ const ProfileScreen = () => {
           name: profileData.first_name,
           email: profileData.email,
           phone: profileData.phone,
+          city: profileData.city,
           headline: profileData.headline,
           postalCode: profileData.postal_code,
+          workExperiences: profileData.work_experiences, 
+          educations: profileData.educations, 
+  
+          
         });
     } catch (error) {
         console.error('Error fetching default profile information:', error.message);
@@ -132,14 +229,15 @@ const handleSaveWorkExperience = async () => {
     }
     console.log(response);
 
-    // Optionally, you can update the UI or perform any additional actions after saving the work experience
+    await fetchDefaultProfileInfo(storedUserId, csrfToken);
+  
 
-    // Reset the form fields
-    setJobTitle('');
-    setCompany('');
-    setFromDate('');
-    setToDate('');
-    setDescription('');
+      
+    // setJobTitle('');
+    // setCompany('');
+    // setFromDate('');
+    // setToDate('');
+    // setDescription('');
 
     setIsWorkExperienceModalVisible(false);
   } catch (error) {
@@ -335,11 +433,11 @@ const handleSaveWorkExperience = async () => {
         
               <View style={styles.fieldContainer}>
                     <Text style={styles.label}>Name:</Text>
-                    <Text style={styles.info}>{capitalizeEachWord(profileInfo.name)}</Text>
+                    <Text style={styles.info}>{profileInfo.name ? capitalizeEachWord(profileInfo.name) : ""}</Text>
                   </View>
                   <View style={styles.fieldContainer}>
                     <Text style={styles.label}>Job Title:</Text>
-                    <Text style={styles.info}>{capitalizeEachWord(profileInfo.headline)}</Text>
+                    <Text style={styles.info}>{profileInfo.headline ? capitalizeEachWord(profileInfo.headline) : ""}</Text>
                   </View>
                   <View style={styles.fieldContainer}>
                     <Text style={styles.label}>Email:</Text>
@@ -351,7 +449,7 @@ const handleSaveWorkExperience = async () => {
                   </View>
                   <View style={styles.fieldContainer}>
                     <Text style={styles.label}>City:</Text>
-                    <Text style={styles.info}>{capitalizeEachWord(profileInfo.city)}</Text>
+                    <Text style={styles.info}>{profileInfo.city ? capitalizeEachWord(profileInfo.city) : ""}</Text>
                   </View>
                   <View style={styles.fieldContainer}>
                     <Text style={styles.label}>Postal Code:</Text>
@@ -359,12 +457,12 @@ const handleSaveWorkExperience = async () => {
                   </View>
 
               {!editingSection && (
-  <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Profile Information')}>
-    <Icon name="pencil" size={18} color="white" />
-  </TouchableOpacity>
-)}
+                  <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Profile Information')}>
+                    <Icon name="pencil" size={18} color="white" />
+                  </TouchableOpacity>
+                )}
 
-      </View>
+             </View>
           {/* Edit Profile Modal */}
             <Modal visible={isModalVisible} animationType="slide" transparent>
               <View style={styles.modalBackground}>
@@ -437,40 +535,50 @@ const handleSaveWorkExperience = async () => {
         )}
 
          {/* Summary Modal */}
-      <Modal visible={isSummaryModalVisible} animationType="slide" transparent>
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalHeader}>Edit Summary</Text>
-            <TextInput
-              style={[styles.modalInput, { height: 100 }]} // Adjust the height as needed
-              placeholder="Enter summary"
-              multiline={true}
-              numberOfLines={4} // Adjust the number of lines as needed
-              value={summary}
-              onChangeText={setSummary}
-            />
-            <View style={styles.modalButtonsContainer}>
-              <TouchableOpacity style={[styles.modalButton,styles.cancelButton]} onPress={() => setIsSummaryModalVisible(false)}>
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-                      {loading ? (
-                        <ActivityIndicator size="large" color="#0000ff" />
-                      ) : (
-                        <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveSummary}>
-                          <Text style={styles.buttonText}>Save</Text>
-                        </TouchableOpacity>
-                )}
-            </View>
-          </View>
-        </View>
-      </Modal>
+            <Modal visible={isSummaryModalVisible} animationType="slide" transparent>
+              <View style={styles.modalBackground}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalHeader}>Edit Summary</Text>
+                  <TextInput
+                    style={[styles.modalInput, { height: 100 }]} // Adjust the height as needed
+                    placeholder="Enter summary"
+                    multiline={true}
+                    numberOfLines={4} // Adjust the number of lines as needed
+                    value={summary}
+                    onChangeText={setSummary}
+                  />
+                  <View style={styles.modalButtonsContainer}>
+                    <TouchableOpacity style={[styles.modalButton,styles.cancelButton]} onPress={() => setIsSummaryModalVisible(false)}>
+                      <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
+                            {loading ? (
+                              <ActivityIndicator size="large" color="#0000ff" />
+                            ) : (
+                              <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveSummary}>
+                                <Text style={styles.buttonText}>Save</Text>
+                              </TouchableOpacity>
+                      )}
+                  </View>
+                </View>
+              </View>
+            </Modal>
 
       </View>
 
       {/* Work Experience Box */}
-      <View style={styles.sectionContainer}>
-          <Text style={styles.header}>Work Experience</Text>
-            <Text style={styles.text}>{workExperience}</Text>
+              <View style={styles.sectionContainer}>
+                  <Text style={styles.header}>Work Experience</Text>
+                    {profileInfo && Array.isArray(profileInfo.workExperiences) && profileInfo.workExperiences.map((experience, index) => (
+                      <View key={index} style={styles.experienceContainer}>
+                          <Text style={styles.text}>Job Title: {experience.job_title}</Text>
+                          <Text style={styles.text}>Company: {experience.company_name}</Text>
+                          <Text style={styles.text}>Start Date: {experience.start_date}</Text>
+                          <Text style={styles.text}>End Date: {experience.end_date}</Text>
+                          <Text style={styles.text}>Description: {experience.description}</Text>
+                      </View>
+                    ))}
+
+
             {editingSection === 'Work Experience' && (
               <Modal visible={isModalVisible} animationType="slide">
                 {/* ... (Edit Work Experience Modal content goes here) */}
@@ -481,66 +589,93 @@ const handleSaveWorkExperience = async () => {
             )}
             {!editingSection && (
               <TouchableOpacity style={styles.editButton} onPress={() => setIsWorkExperienceModalVisible(true)}>
-                <Icon name="pencil" size={18} color="white" />
+                <Icon name="plus" size={18} color="white" />
               </TouchableOpacity>
             )}
 
-<Modal visible={isWorkExperienceModalVisible} animationType="slide" transparent>
-  <View style={styles.modalBackground}>
-    <View style={styles.modalContent}>
-      <Text style={styles.modalHeader}>Add Work Experience</Text>
-      <TextInput
-        style={styles.modalInput}
-        placeholder="Job Title*"
-        value={jobTitle}
-        onChangeText={setJobTitle}
-      />
-      <TextInput
-        style={styles.modalInput}
-        placeholder="Company"
-        value={company}
-        onChangeText={setCompany}
-      />
-      <View style={styles.dateInputContainer}>
-        <TextInput
-          style={[styles.modalInput, styles.dateInput]}
-          placeholder="From"
-          value={fromDate}
-          onChangeText={setFromDate}
-        />
-        <TextInput
-          style={[styles.modalInput, styles.dateInput]}
-          placeholder="To"
-          value={toDate}
-          onChangeText={setToDate}
-        />
-      </View>
-      <TextInput
-        style={[styles.modalInput, { height: 100 }]} // Adjust height for description
-        placeholder="Description"
-        multiline
-        numberOfLines={4}
-        value={description}
-        onChangeText={setDescription}
-      />
-      <View style={styles.modalButtonsContainer}>
-        <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setIsWorkExperienceModalVisible(false)}>
-          <Text style={styles.buttonText}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveWorkExperience}>
-          <Text style={styles.buttonText}>Save</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </View>
-</Modal>
+              <Modal visible={isWorkExperienceModalVisible} animationType="slide" transparent>
+                <View style={styles.modalBackground}>
+                  <View style={styles.modalContent}>
+                    <Text style={styles.modalHeader}>Add Work Experience</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      placeholder="Job Title*"
+                      value={jobTitle}
+                      onChangeText={setJobTitle}
+                    />
+                    <TextInput
+                      style={styles.modalInput}
+                      placeholder="Company"
+                      value={company}
+                      onChangeText={setCompany}
+                    />
+                    <View style={styles.dateInputContainer}>
+                      <TouchableOpacity onPress={handleFromDatePress}>
+                        <TextInput
+                          style={[styles.modalInput, styles.dateInput]}
+                          placeholder="From Date"
+                          value={fromDate}
+                          editable={false}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={handleToDatePress}>
+                        <TextInput
+                          style={[styles.modalInput, styles.dateInput]}
+                          placeholder="To Date"
+                          value={toDate}
+                          editable={false}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePickerModal
+                      isVisible={showFromDatePicker}
+                      mode="date"
+                      onConfirm={handleFromDateConfirm}
+                      onCancel={() => setShowFromDatePicker(false)}
+                    />
+                    <DateTimePickerModal
+                      isVisible={showToDatePicker}
+                      mode="date"
+                      onConfirm={handleToDateConfirm}
+                      onCancel={() => setShowToDatePicker(false)}
+                    />
+                    <TextInput
+                      style={[styles.modalInput, { height: 100 }]} // Adjust height for description
+                      placeholder="Description"
+                      multiline
+                      numberOfLines={4}
+                      value={description}
+                      onChangeText={setDescription}
+                    />
+                    <View style={styles.modalButtonsContainer}>
+                      <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setIsWorkExperienceModalVisible(false)}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveWorkExperience}>
+                        <Text style={styles.buttonText}>Save</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
+
 
       </View>
 
       {/* Education Box */}
       <View style={styles.sectionContainer}>
         <Text style={styles.header}>Education</Text>
-        <Text style={styles.text}>{education}</Text>
+        {profileInfo && Array.isArray(profileInfo.educations) && profileInfo.educations.map((education, index) => (
+          <View key={index} style={styles.experienceContainer}>
+            <Text style={styles.text}>Level of Education: {education.edu_level_of_education}</Text>
+            <Text style={styles.text}>Field of Study: {education.edu_field_of_study}</Text>
+            <Text style={styles.text}>School Name: {education.edu_school}</Text>
+            <Text style={styles.text}>City: {education.edu_city}</Text>
+            <Text style={styles.text}>Start Date: {education.edu_start_date}</Text>
+            <Text style={styles.text}>End Date: {education.edu_end_date}</Text>
+          </View>
+        ))}
+
         {editingSection === 'Education' && (
           <Modal visible={isModalVisible} animationType="slide">
             {/* ... (Edit Education Modal content goes here) */}
@@ -550,10 +685,81 @@ const handleSaveWorkExperience = async () => {
           </Modal>
         )}
         {!editingSection && (
-          <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Education')}>
-            <Icon name="pencil" size={18} color="white" />
+          
+            <TouchableOpacity style={styles.editButton} onPress={() => setIsEducationModalVisible(true)}>
+            <Icon name="plus" size={18} color="white" />
           </TouchableOpacity>
         )}
+
+          <Modal visible={isEducationModalVisible} animationType="slide" transparent>
+            <View style={styles.modalBackground}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalHeader}>Add Education</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Level of Education*"
+                  value={level}
+                  onChangeText={setLevel}
+                />
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Field of Study*"
+                  value={fieldOfStudy}
+                  onChangeText={setFieldOfStudy}
+                />
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="School Name*"
+                  value={schoolName}
+                  onChangeText={setSchoolName}
+                />
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="City*"
+                  value={cityedu}
+                  onChangeText={setCityedu}
+                />
+                <View style={styles.dateInputContainer}>
+                  <TouchableOpacity onPress={handleFromDatePress}>
+                    <TextInput
+                      style={[styles.modalInput, styles.dateInput]}
+                      placeholder="From Date"
+                      value={fromDate}
+                      editable={false}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleToDatePress}>
+                    <TextInput
+                      style={[styles.modalInput, styles.dateInput]}
+                      placeholder="To Date"
+                      value={toDate}
+                      editable={false}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <DateTimePickerModal
+                  isVisible={showFromDatePicker}
+                  mode="date"
+                  onConfirm={handleFromDateConfirm}
+                  onCancel={() => setShowFromDatePicker(false)}
+                />
+                <DateTimePickerModal
+                  isVisible={showToDatePicker}
+                  mode="date"
+                  onConfirm={handleToDateConfirm}
+                  onCancel={() => setShowToDatePicker(false)}
+                />
+                <View style={styles.modalButtonsContainer}>
+                  <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setIsEducationModalVisible(false)}>
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveEducation}>
+                    <Text style={styles.buttonText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
       </View>
 
       {/* Skills Box */}
@@ -618,6 +824,16 @@ const handleSaveWorkExperience = async () => {
 
 
 const styles = StyleSheet.create({
+  experienceContainer: {
+    borderColor: 'lightgray',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+},
+text: {
+    // Your existing text styles
+},
   modalBackground: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
