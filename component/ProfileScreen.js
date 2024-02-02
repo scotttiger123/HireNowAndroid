@@ -28,6 +28,8 @@ const ProfileScreen = () => {
   const [toDate, setToDate] = useState('');
   const [description, setDescription] = useState('');
 
+
+
   const [education, setEducation] = useState('University X - Degree X\nCollege Y - Degree Y');
   
     const [educationDetails, setEducationDetails] = useState({
@@ -48,10 +50,17 @@ const ProfileScreen = () => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
 
+  const [isSkillModalVisible, setIsSkillModalVisible] = useState(false);
+  const [skillName, setSkillName] = useState('');
+  const [yearsOfExperience, setYearsOfExperience] = useState('');
 
-  const [skills, setSkills] = useState('Skill A, Skill B, Skill C');
-  const [certifications, setCertifications] = useState('Certification A, Certification B');
-  const [licenses, setLicenses] = useState('License X, License Y');
+  const [isCertificationModalVisible, setIsCertificationModalVisible] = useState(false);
+  const [certificationName, setCertificationName] = useState('');
+  const [certificationStartDate, setCertificationStartDate] = useState('');
+  const [certificationEndDate, setCertificationEndDate] = useState('');
+  const [certificationDescription, setCertificationDescription] = useState('');
+
+
   
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
@@ -63,7 +72,47 @@ const ProfileScreen = () => {
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
 
-  
+  const handleSaveCertification  = async () => {
+
+    try {
+      setLoading(true); // Set loading to true while saving
+    
+      const csrfToken = await getCsrfToken();
+      const storedUserId = await AsyncStorage.getItem('userId');
+      const formData = new FormData();
+    
+    formData.append('user_id', storedUserId);
+    formData.append('certification_name', certificationName);
+    formData.append('start_date', certificationStartDate);
+    formData.append('end_date', certificationEndDate);
+    formData.append('description', certificationDescription);
+    
+      const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-certification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,
+      });
+    
+      const responseData = await response.json();
+    
+      if (!response) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+    
+      console.log(responseData);
+      await fetchDefaultProfileInfo(storedUserId, csrfToken);
+      
+      setIsEducationModalVisible(false);
+    } catch (error) {
+      console.error('Error saving education:', error.message);
+    } finally {
+      setLoading(false); // Set loading back to false after save attempt
+    }
+  }
+
   const handleSaveEducation = async () => {
     
     try {
@@ -124,6 +173,22 @@ const ProfileScreen = () => {
     setShowFromDatePicker(false);
   };
 
+  
+
+  const handleCertificationStartDateConfirm = (date) => {
+    console.log('Selected date:', date);
+    console.log('Formatted date:', date.toISOString().split('T')[0]);
+    setCertificationStartDate(date.toISOString().split('T')[0]);
+    setShowFromDatePicker(false);
+  };
+  
+  const handleCertificationEndDateConfirm = (date) => {
+    console.log('Selected end date:', date);
+    console.log('Formatted end date:', date.toISOString().split('T')[0]);
+    setCertificationEndDate(date.toISOString().split('T')[0]);
+    setShowToDatePicker(false);
+  };
+  
   // Function to handle date confirmation for the 'to' date
   const handleToDateConfirm = (date) => {
     setToDate(date.toISOString().split('T')[0]);
@@ -189,6 +254,8 @@ const ProfileScreen = () => {
           postalCode: profileData.postal_code,
           workExperiences: profileData.work_experiences, 
           educations: profileData.educations, 
+          skills: profileData.skills, 
+          certifications: profileData.certifications, 
   
           
         });
@@ -197,6 +264,43 @@ const ProfileScreen = () => {
         throw error; // Propagate the error to the caller
     }
 };
+
+const handleSaveSkill = async () => { 
+  try {
+        setLoading(true);
+        const csrfToken = await getCsrfToken();
+        const storedUserId = await AsyncStorage.getItem('userId');
+        const formData = new FormData();
+        
+        formData.append('user_id', storedUserId);
+        formData.append('skill_name', skillName);
+        formData.append('year_of_experience', yearsOfExperience);
+        
+        const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-skill', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-CSRF-TOKEN': csrfToken,
+          },
+          body: formData,
+        });
+        
+        const responseData = await response.json();
+
+        if (!response) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        await fetchDefaultProfileInfo(storedUserId, csrfToken);
+
+        setIsSummaryModalVisible(false);
+      } catch (error) {
+        console.error('Error saving summary:', error.message);
+      } finally {
+        setLoading(false);
+      }
+
+} 
 
 const handleSaveWorkExperience = async () => {
   try {
@@ -667,13 +771,34 @@ const handleSaveWorkExperience = async () => {
         <Text style={styles.header}>Education</Text>
         {profileInfo && Array.isArray(profileInfo.educations) && profileInfo.educations.map((education, index) => (
           <View key={index} style={styles.experienceContainer}>
-            <Text style={styles.text}>Level of Education: {education.edu_level_of_education}</Text>
-            <Text style={styles.text}>Field of Study: {education.edu_field_of_study}</Text>
-            <Text style={styles.text}>School Name: {education.edu_school}</Text>
-            <Text style={styles.text}>City: {education.edu_city}</Text>
-            <Text style={styles.text}>Start Date: {education.edu_start_date}</Text>
-            <Text style={styles.text}>End Date: {education.edu_end_date}</Text>
-          </View>
+            
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Level of Education:</Text>
+                  <Text style={styles.text}>{education.edu_level_of_education}</Text>
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Field of Study:</Text>
+                  <Text style={styles.text}>{education.edu_field_of_study}</Text>
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>School Name:</Text>
+                  <Text style={styles.text}>{education.edu_school}</Text>
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>City:</Text>
+                  <Text style={styles.text}>{education.edu_city}</Text>
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Start Date:</Text>
+                  <Text style={styles.text}>{education.edu_start_date}</Text>
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>End Date:</Text>
+                  <Text style={styles.text}>{education.edu_end_date}</Text>
+                </View>
+              </View>
+
+          
         ))}
 
         {editingSection === 'Education' && (
@@ -762,63 +887,174 @@ const handleSaveWorkExperience = async () => {
           </Modal>
       </View>
 
-      {/* Skills Box */}
+            {/* Skill Box */}
       <View style={styles.sectionContainer}>
         <Text style={styles.header}>Skills</Text>
-        <Text style={styles.text}>{skills}</Text>
-        {editingSection === 'Skills' && (
-          <Modal visible={isModalVisible} animationType="slide">
-            {/* ... (Edit Skills Modal content goes here) */}
-            <TouchableOpacity onPress={handleSave}>
-              <Text>Save</Text>
-            </TouchableOpacity>
-          </Modal>
-        )}
-        {!editingSection && (
-          <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Skills')}>
-            <Icon name="pencil" size={18} color="white" />
-          </TouchableOpacity>
-        )}
-      </View>
+            {profileInfo && Array.isArray(profileInfo.skills) && profileInfo.skills.map((skill, index) => (
+              <View key={index} style={styles.experienceContainer}>
+                <View style={styles.fieldContainer}>
+                    <Text style={styles.label}>Skill</Text>
+                    <Text style={styles.text}>{skill.skill_name}</Text>
+                    </View>    
+                <View style={styles.fieldContainer}>
+                    <Text style={styles.label}>Experience:</Text>
+                    <Text style={styles.text}>
+                      {skill.year_of_experience} {skill.year_of_experience > 1 ? 'years' : 'year'}
+                    </Text>
+                  </View>
+              </View> 
 
-      {/* Certifications Box */}
-      <View style={styles.sectionContainer}>
-        <Text style={styles.header}>Certifications</Text>
-        <Text style={styles.text}>{certifications}</Text>
-        {editingSection === 'Certifications' && (
-          <Modal visible={isModalVisible} animationType="slide">
-            {/* ... (Edit Certifications Modal content goes here) */}
-            <TouchableOpacity onPress={handleSave}>
-              <Text>Save</Text>
-            </TouchableOpacity>
-          </Modal>
-        )}
-        {!editingSection && (
-          <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Certifications')}>
-            <Icon name="pencil" size={18} color="white" />
-          </TouchableOpacity>
-        )}
-      </View>
+              ))}
 
-      {/* Licenses Box */}
-      <View style={styles.sectionContainer}>
-        <Text style={styles.header}>Licenses</Text>
-        <Text style={styles.text}>{licenses}</Text>
-        {editingSection === 'Licenses' && (
-          <Modal visible={isModalVisible} animationType="slide">
-            {/* ... (Edit Licenses Modal content goes here) */}
-            <TouchableOpacity onPress={handleSave}>
-              <Text>Save</Text>
-            </TouchableOpacity>
-          </Modal>
-        )}
-        {!editingSection && (
-          <TouchableOpacity style={styles.editButton} onPress={() => handleEdit('Licenses')}>
-            <Icon name="pencil" size={18} color="white" />
+      
+  {editingSection === 'Skills' && (
+    <Modal visible={isModalVisible} animationType="slide">
+      {/* Edit Skill Modal content goes here */}
+      <TouchableOpacity onPress={handleSaveSkill}>
+        <Text>Save</Text>
+      </TouchableOpacity>
+    </Modal>
+  )}
+  {!editingSection && (
+    <TouchableOpacity style={styles.editButton} onPress={() => setIsSkillModalVisible(true)}>
+      <Icon name="plus" size={18} color="white" />
+    </TouchableOpacity>
+  )}
+
+  {/* Skill Modal */}
+  <Modal visible={isSkillModalVisible} animationType="slide" transparent>
+    <View style={styles.modalBackground}>
+      <View style={styles.modalContent}>
+        <Text style={styles.modalHeader}>Edit Skills</Text>
+        <TextInput
+          style={styles.modalInput}
+          placeholder="Enter skill name"
+          value={skillName}
+          onChangeText={setSkillName}
+        />
+        <TextInput
+          style={styles.modalInput}
+          placeholder="Enter years of experience"
+          keyboardType="numeric"
+          value={yearsOfExperience.toString()}
+          onChangeText={text => setYearsOfExperience(parseInt(text))}
+        />
+        <View style={styles.modalButtonsContainer}>
+          <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setIsSkillModalVisible(false)}>
+            <Text style={styles.buttonText}>Cancel</Text>
           </TouchableOpacity>
-        )}
+          {loading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : (
+            <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveSkill}>
+              <Text style={styles.buttonText}>Save</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-      </ScrollView>
+    </View>
+  </Modal>
+</View>
+
+      {/* Certification/License Box */}
+      <View style={styles.sectionContainer}>
+      <Text style={styles.header}>Certifications/Licenses</Text>
+      {/* Display total count of certifications/licenses */}
+      
+      {/* Display existing certifications/licenses */}
+      {profileInfo && Array.isArray(profileInfo.certifications) && profileInfo.certifications.map((certification, index) => (
+        
+          <View key={index} style={styles.experienceContainer}>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label}>Certification/License </Text>
+              <Text style={styles.text}>{certification.certificate_name}</Text>
+            </View>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label}>Start Date</Text>
+              <Text style={styles.text}>{certification.certificate_start_date}</Text>
+            </View>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label}>End Date</Text>
+              <Text style={styles.text}>{certification.certificate_end_date}</Text>
+            </View>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label}>Description</Text>
+              <Text style={styles.text}>{certification.certificate_description}</Text>
+            </View>
+          </View>
+        ))}
+      {/* Add certification/license button */}
+      <TouchableOpacity style={styles.editButton} onPress={() => setIsCertificationModalVisible(true)}>
+        <Icon name="plus" size={18} color="white" />
+      </TouchableOpacity>
+      {/* Certification/License Modal */}
+      <Modal visible={isCertificationModalVisible} animationType="slide" transparent>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalHeader}>Add Certification/License</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Certification/License Name"
+              value={certificationName}
+              onChangeText={setCertificationName}
+            />
+             <TouchableOpacity onPress={handleFromDatePress}>
+                <TextInput
+                style={[styles.modalInput, styles.dateInput]}
+                placeholder="From Date"
+                value={certificationStartDate}
+                editable={false}
+              />
+             </TouchableOpacity> 
+            <TouchableOpacity onPress={handleToDatePress}>
+              <TextInput
+                style={[styles.modalInput, styles.dateInput]}
+                placeholder="To Date"
+                value={certificationEndDate}
+                editable={false}
+              />
+              </TouchableOpacity>
+            
+             
+            
+            <TextInput
+              style={[styles.modalInput, { height: 100 }]}
+              placeholder="Description"
+              multiline
+              numberOfLines={4}
+              value={certificationDescription}
+              onChangeText={setCertificationDescription}
+            />
+                <DateTimePickerModal
+                      isVisible={showFromDatePicker}
+                      mode="date"
+                      onConfirm={handleCertificationStartDateConfirm}
+                      onCancel={() => setShowFromDatePicker(false)}
+                    />
+                    <DateTimePickerModal
+                      isVisible={showToDatePicker}
+                      mode="date"
+                      onConfirm={handleCertificationEndDateConfirm}
+                      onCancel={() => setShowToDatePicker(false)}
+                    />
+            <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setIsCertificationModalVisible(false)}>
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+              ) : (
+                <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveCertification}>
+                  <Text style={styles.buttonText}>Save</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
+
+    </ScrollView>
   );
 };
 
@@ -832,9 +1068,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
 },
 text: {
-    // Your existing text styles
-},
-  modalBackground: {
+  fontFamily: 'Tahoma',
+    fontWeight: '500',
+}, modalBackground: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',

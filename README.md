@@ -125,6 +125,10 @@ ubaid rehman
 USERNAME
 Scotttigerpatloo
 
+=========
+sendmail to smtp    (vise versa)
+[2024-02-01 15:29:17] local.ERROR: Error sending email: Connection to "process /usr/sbin/sendmail -bs" has been closed unexpectedly. 
+
 
 
 
