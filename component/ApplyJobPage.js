@@ -5,12 +5,12 @@ import DocumentPicker from 'react-native-document-picker';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Import MaterialIcons from react-native-vector-icons
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import getCsrfToken from './csrfTokenUtil';
 const ApplyJobPage = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { job } = route.params;
-
+  
   const [formData, setFormData] = useState({
     education: '',
     experience: '',
@@ -19,12 +19,15 @@ const ApplyJobPage = () => {
     step3Data: '',
     step4Data: '',
   });
+  const [selectedButton, setSelectedButton] = useState(null); // Initialize selectedButton state
+  const [profileSelected, setProfileSelected] = useState(false); // Initialize profileSelected state
+
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-
+  const [selectedFile1, setSelectedFile1] = useState(null);
   const handleNext = () => {
     if (
       formData.education.toLowerCase() === 'yes' &&
@@ -33,7 +36,7 @@ const ApplyJobPage = () => {
     ) {
       setCurrentStep(currentStep + 1);
     } else {
-      setModalMessage('Please select "Yes" for all options.');
+      setModalMessage('You are not meeting the job requirements');
       setModalVisible(true);
       console.log('Please select "Yes" for all options');
     }
@@ -43,6 +46,49 @@ const ApplyJobPage = () => {
     setCurrentStep(currentStep - 1);
   };
 
+  const handleMyProfilePress = () => {
+    setSelectedButton('myProfile'); 
+    setSelectedFile(null); 
+    setProfileSelected(true); 
+  
+  };
+  const handleMyProfileSubmit = async () => {
+    try {
+      setIsLoading(true);
+      
+    
+      const csrfToken = await getCsrfToken();
+      const storedUserId = await AsyncStorage.getItem('userId');
+      const apiUrl = 'https://jobs.dev.britmarketing.co.uk/api/upload-cv';
+      const formData = new FormData();
+      formData.append('profile_cv','1');
+      formData.append('user_id', storedUserId); 
+      formData.append('job_id', job.id); 
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,
+      });
+
+      if (response) {
+        const responseData = await response.json();
+        console.log('API response: ', responseData);
+        setModalMessage(`${responseData.message}`);
+        setModalVisible(true);
+      } else {
+        console.error('API request failed: ', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('An unexpected error occurred: ', error);
+    } finally {
+      setIsLoading(false);
+    }
+  
+  };
+  
   const handleUploadCV = async () => {
     try {
       setIsLoading(true);
@@ -50,6 +96,8 @@ const ApplyJobPage = () => {
         type: [DocumentPicker.types.allFiles],
       });
       setSelectedFile(result);
+      setSelectedButton('uploadCV'); // Update selectedButton state to 'uploadCV'
+      setProfileSelected(false); 
     } catch (error) {
       console.error('Error picking document: ', error);
       setModalMessage('Error picking document: ', error);
@@ -226,29 +274,45 @@ const ApplyJobPage = () => {
         </View>
       )}
 
-      {currentStep === 2 && (
-        <View>
-          {selectedFile && (
-            <Text style={styles.selectedFileText}>
-              Selected File: {selectedFile[0].name}
-            </Text>
-          )}
-       
-       <TouchableOpacity
-            style={styles.uploadButton}
-            onPress={handleUploadCV}
-            disabled={isLoading}
-          >
-            <View style={styles.uploadButtonContainer}>
-              <Icon name="cloud-upload" size={24} color="white" style={styles.iconStyle} />
-              <Text style={styles.uploadButtonText}>Upload CV</Text>
-            </View>
-          </TouchableOpacity>
 
-          
-        </View>
-      )}
+{currentStep === 2 && (
+  <View>
+  
 
+  {/* Render selected file if available */}
+  {selectedFile && (
+    <Text style={styles.selectedFileText}>
+      Selected File: {selectedFile[0].name}
+    </Text>
+  )}
+  <TouchableOpacity
+    style={[styles.uploadButton, selectedButton === 'uploadCV' && styles.selectedButton]}
+    onPress={handleUploadCV}
+    disabled={isLoading}
+  >
+    <View style={styles.uploadButtonContainer}>
+      <Icon name="cloud-upload" size={24} color="white" style={styles.iconStyle} />
+      <Text style={styles.uploadButtonText}>Upload CV</Text>
+    </View>
+  </TouchableOpacity>
+   {/* Add text for profile resume selected */}
+   {profileSelected && (
+      <Text style={styles.selectedFileText}>
+        Profile Resume Selected
+      </Text>
+    )} 
+  {/* Add button for "My Profile" */}
+  <TouchableOpacity
+    style={[styles.profileButton, selectedButton === 'myProfile' && styles.selectedButton]}
+    onPress={handleMyProfilePress}
+  >
+    <View style={styles.uploadButtonContainer}>
+      <Icon name="person" size={24} color="white" style={styles.iconStyle} />
+      <Text style={styles.uploadButtonText}>My Profile</Text>
+    </View>
+  </TouchableOpacity>
+</View>
+)}
       <View style={styles.footer}>
         {currentStep > 1 && (
           <TouchableOpacity onPress={handlePrevious} style={styles.button}>
@@ -264,13 +328,26 @@ const ApplyJobPage = () => {
           </TouchableOpacity>
         )}
 
-        {currentStep === 2 && (
-          <TouchableOpacity onPress={selectedFile ? submitCV : () => showErrorMessage()} style={styles.submitButton}>
-            <Icon name="cloud-upload" size={20} color="white" />
-           <Text style={styles.submitButtonText}>Submit CV</Text>
-          </TouchableOpacity>
-        
-        )}
+{currentStep === 2 && (
+  <TouchableOpacity
+    onPress={() => {
+      if (selectedFile) {
+        submitCV();
+      } else if (profileSelected) {
+        handleMyProfileSubmit();
+      } else {
+        showErrorMessage();
+      }
+    }}
+    style={[styles.submitButton, (selectedFile || profileSelected) && styles.activeSubmitButton]}
+  >
+    <Icon name="cloud-upload" size={20} color="white" />
+    <Text style={styles.submitButtonText}>Submit CV</Text>
+  </TouchableOpacity>
+)}
+
+
+
       </View>
       <Modal
         animationType="slide"
@@ -298,13 +375,27 @@ const ApplyJobPage = () => {
 };
 
 const styles = StyleSheet.create({
-
-  uploadButton: {
+  
+  selectedButton: {
+    borderWidth: 2,
+    borderColor: 'black', // Adjust the color as needed
+  },
+  profileButton: {
     backgroundColor: '#3498db', // Adjust the color as needed
-    padding: 10,
+    padding: 1,
     borderRadius: 5,
     flexDirection: 'row',
-    marginTop:50,
+    marginTop:15,
+    justifyContent: 'center',
+    alignItems: 'center',
+
+  },
+  uploadButton: {
+    backgroundColor: '#e74c3c', // Adjust the color as needed
+    padding: 1,
+    borderRadius: 5,
+    flexDirection: 'row',
+    marginTop:15,
     justifyContent: 'center',
     alignItems: 'center',
 

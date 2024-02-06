@@ -1,5 +1,5 @@
 import React, { useState ,useEffect} from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity, Image ,ScrollView,TextInput,ActivityIndicator } from 'react-native';
+import { View, Text, Modal, Alert,StyleSheet, TouchableOpacity, Image ,ScrollView,TextInput,ActivityIndicator } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -71,6 +71,52 @@ const ProfileScreen = () => {
   
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
+  
+  const handleDeleteCertification = async (tableName, id) => {
+    Alert.alert(
+      'Confirm Delete',
+      'Are you sure you want to delete ?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel'
+        },
+        { 
+          text: 'Delete', 
+          onPress: () => deleteCertification(tableName, id)
+        }
+      ],
+      { cancelable: false }
+    );
+  };
+  
+  const deleteCertification = async (tableName, id) => {
+    try {
+      const response = await fetch(`https://jobs.dev.britmarketing.co.uk/api/delete-entry/${tableName}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          // Include any required headers
+        },
+      });
+  
+      if (response) {
+        const csrfToken = await getCsrfToken();
+        const storedUserId = await AsyncStorage.getItem('userId');
+        await fetchDefaultProfileInfo(storedUserId, csrfToken);
+        console.log('Certification deleted successfully');
+      } else {
+        console.error('Failed to delete certification:', response.status);
+        // Handle other non-200 status codes
+      }
+    } catch (error) {
+      console.error('Error deleting certification:', error.message);
+      // Handle fetch or other errors
+    }
+  };
+  
+
 
   const handleSaveCertification  = async () => {
 
@@ -126,7 +172,7 @@ const ProfileScreen = () => {
       formData.append('level', level);
       formData.append('field_of_study', fieldOfStudy);
       formData.append('school_name', schoolName);
-      formData.append('city', city);
+      formData.append('city', cityedu);
       formData.append('from_date', fromDate);
       formData.append('to_date', toDate);
     
@@ -673,7 +719,13 @@ const handleSaveWorkExperience = async () => {
               <View style={styles.sectionContainer}>
                   <Text style={styles.header}>Work Experience</Text>
                     {profileInfo && Array.isArray(profileInfo.workExperiences) && profileInfo.workExperiences.map((experience, index) => (
+                      
                       <View key={index} style={styles.experienceContainer}>
+                          <View style={styles.deleteButtonContainer}>
+                            <TouchableOpacity onPress={() => handleDeleteCertification('candidate_work_experiences',experience.id)} style={styles.deleteButton}>
+                              <Icon name="trash" size={18} color="gray" />
+                            </TouchableOpacity>
+                          </View>  
                           <Text style={styles.text}>Job Title: {experience.job_title}</Text>
                           <Text style={styles.text}>Company: {experience.company_name}</Text>
                           <Text style={styles.text}>Start Date: {experience.start_date}</Text>
@@ -771,7 +823,12 @@ const handleSaveWorkExperience = async () => {
         <Text style={styles.header}>Education</Text>
         {profileInfo && Array.isArray(profileInfo.educations) && profileInfo.educations.map((education, index) => (
           <View key={index} style={styles.experienceContainer}>
-            
+                <View style={styles.deleteButtonContainer}>
+                  {/* Delete Button with Icon */}
+                  <TouchableOpacity onPress={() => handleDeleteCertification('candidate_educations',education.id)} style={styles.deleteButton}>
+                    <Icon name="trash" size={18} color="gray" />
+                  </TouchableOpacity>
+                </View>
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Level of Education:</Text>
                   <Text style={styles.text}>{education.edu_level_of_education}</Text>
@@ -892,6 +949,12 @@ const handleSaveWorkExperience = async () => {
         <Text style={styles.header}>Skills</Text>
             {profileInfo && Array.isArray(profileInfo.skills) && profileInfo.skills.map((skill, index) => (
               <View key={index} style={styles.experienceContainer}>
+                <View style={styles.deleteButtonContainer}>
+                  {/* Delete Button with Icon */}
+                  <TouchableOpacity onPress={() => handleDeleteCertification('candidate_skills',skill.id)} style={styles.deleteButton}>
+                    <Icon name="trash" size={18} color="gray" />
+                  </TouchableOpacity>
+                </View>
                 <View style={styles.fieldContainer}>
                     <Text style={styles.label}>Skill</Text>
                     <Text style={styles.text}>{skill.skill_name}</Text>
@@ -963,26 +1026,32 @@ const handleSaveWorkExperience = async () => {
       
       {/* Display existing certifications/licenses */}
       {profileInfo && Array.isArray(profileInfo.certifications) && profileInfo.certifications.map((certification, index) => (
-        
-          <View key={index} style={styles.experienceContainer}>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Certification/License </Text>
-              <Text style={styles.text}>{certification.certificate_name}</Text>
-            </View>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Start Date</Text>
-              <Text style={styles.text}>{certification.certificate_start_date}</Text>
-            </View>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.label}>End Date</Text>
-              <Text style={styles.text}>{certification.certificate_end_date}</Text>
-            </View>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Description</Text>
-              <Text style={styles.text}>{certification.certificate_description}</Text>
-            </View>
+        <View key={index} style={styles.experienceContainer}>
+          <View style={styles.deleteButtonContainer}>
+            {/* Delete Button with Icon */}
+            <TouchableOpacity onPress={() => handleDeleteCertification('candidate_certifications',certification.id)} style={styles.deleteButton}>
+              <Icon name="trash" size={18} color="gray" />
+            </TouchableOpacity>
           </View>
-        ))}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Certification/License </Text>
+            <Text style={styles.text}>{certification.certificate_name}</Text>
+          </View>
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Start Date</Text>
+            <Text style={styles.text}>{certification.certificate_start_date}</Text>
+          </View>
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>End Date</Text>
+            <Text style={styles.text}>{certification.certificate_end_date}</Text>
+          </View>
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Description</Text>
+            <Text style={styles.text}>{certification.certificate_description}</Text>
+          </View>
+        </View>
+      ))}
+
       {/* Add certification/license button */}
       <TouchableOpacity style={styles.editButton} onPress={() => setIsCertificationModalVisible(true)}>
         <Icon name="plus" size={18} color="white" />
@@ -1034,7 +1103,7 @@ const handleSaveWorkExperience = async () => {
                     <DateTimePickerModal
                       isVisible={showToDatePicker}
                       mode="date"
-                      onConfirm={handleCertificationEndDateConfirm}
+                      onConfirm={handleCertificationEndDateConfirm} 
                       onCancel={() => setShowToDatePicker(false)}
                     />
             <View style={styles.modalButtonsContainer}>
@@ -1066,6 +1135,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
+},
+deleteButtonContainer: {
+  position: 'absolute',
+  top: 5,
+  right: 5,
+},
+deleteButton: {
+  padding: 5,
+  borderRadius: 5,
 },
 text: {
   fontFamily: 'Tahoma',

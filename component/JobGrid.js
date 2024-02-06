@@ -76,17 +76,74 @@ const JobGrid = () => {
     setSelectedJob(null);
     setModalVisible(false);
   };
+  
+  
+  const renderItem = ({ item }) => {
+    const skillsArray = item.skillsRequired.split(',').map(skill => skill.trim());
+    const jobLocation = JSON.parse(item.jobLocation);
+    const location = Array.isArray(jobLocation) ? jobLocation[0] : '';
+    
+    const capitalizeEachWord = (str) => {
+      return str.replace(/\b\w/g, c => c.toUpperCase());
+    };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => openModal(item)}>
-      <Card containerStyle={styles.card}>
-        <Card.Title>{item.jobTitle}</Card.Title>
-        <Card.Divider />
-        <Text>{item.jobDescription.substring(0, 50)}...</Text>
-      </Card>
-    </TouchableOpacity>
-  );
-
+  
+  const companyName = capitalizeEachWord(item.company);
+  const jobTitle = capitalizeEachWord(item.jobTitle);
+    
+    
+    return (
+      <TouchableOpacity onPress={() => openModal(item)}>
+        <Card containerStyle={styles.card}>
+        <Card.Title>
+          {jobTitle}
+        </Card.Title>
+        <Text style={styles.companyText}>
+          {companyName}
+        </Text>
+          
+          {/* Render job location, icon, salary range, and time icons with values */}
+          <View style={styles.detailsContainer}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {location && (
+                <View style={[styles.detailItem, { flexDirection: 'row', alignItems: 'center' }]}>
+                  <Icon name="location-on" size={20} color="black" style={{ marginRight: 5 }} />
+                  <Text style={styles.detailText}>{location}</Text>
+                </View>
+              )}
+              {item.min_salary > 0 && item.max_salary && (
+                <View style={[styles.detailItem, { flexDirection: 'row', alignItems: 'center' }]}>
+                  <Icon name="attach-money" size={20} color="black" style={{ marginRight: 5 ,marginLeft:5}} />
+                  <Text style={styles.detailText}>£{item.min_salary} - £{item.max_salary}</Text>
+                </View>
+              )}
+              {item.job_shift !== '0'  && (
+                <View style={[styles.detailItem, { flexDirection: 'row', alignItems: 'center' }]}>
+                  <Icon name="timer" size={20} color="black" style={{ marginRight: 5,marginLeft:5 }} />
+                  <Text style={styles.detailText}>{item.job_shift}</Text>
+                </View>
+              )}
+            </View>
+            {/* Render each skill separately */}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 10 }}>
+              {skillsArray.map((skill, index) => (
+                <Text key={index} style={[styles.skill, { marginRight: 5, marginBottom: 5 }]}>{skill}</Text>
+              ))}
+            </View>
+          </View>
+          <Card.Divider />
+          <Text>{item.jobDescription.substring(0, 50)}...</Text>
+        </Card>
+      </TouchableOpacity>
+    );
+  };
+  
+  
+  
+  
+  
+  
+    
  
 
   const updateSelectedValues = (value, filterType) => {
@@ -143,7 +200,7 @@ const JobGrid = () => {
   };
   return (
     
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
       <View style={styles.inputContainer}> 
         
         <TextInput
@@ -239,12 +296,35 @@ const JobGrid = () => {
    );
 };
 const renderTableRow = (label, value) => (
-  <View style={styles.tableRow} key={label}>
+  <View   style={styles.tableRow} key={label}>
     <Text style={styles.tableLabel}>{label}</Text>
     <Text style={styles.tableValue}>{value}</Text>
   </View>
 );
 const styles = StyleSheet.create({
+  companyText: {
+    fontSize: 14,
+    fontWeight: 'bold', 
+    marginBottom: 5, 
+    color: 'black',
+  },
+  skillsContainer: {
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    marginTop: 5, 
+  },
+
+  // Style for each individual skill
+  skill: {
+    fontSize: 12, // Adjusted font size
+    backgroundColor: '#4287f5', // Blue color
+    color: '#fff', // White text color
+    borderRadius: 8, // Rounded corners
+    paddingVertical: 5, // Vertical padding
+    paddingHorizontal: 10, // Horizontal padding
+    marginRight: 5, // Spacing between skills
+    marginBottom: 5, // Spacing between lines
+  },
   secondDivider: {
     marginTop: 10, // Add the desired top margin
     borderBottomWidth: 1,
@@ -294,7 +374,7 @@ const styles = StyleSheet.create({
     width: 100, // You can set this value as per your requirement
   },
   card: {
-    marginBottom: 10,
+    marginBottom: 5,
     borderRadius: 5, // Set the border radius for rounded corners
     
     
