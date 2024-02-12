@@ -8,7 +8,8 @@ import JobDetailsScreen from './component/JobDetailsScreen';
 import ApplyJobPage from './component/ApplyJobPage';
 import AppliedJobGrid from './component/AppliedJobsGrid'; 
 import Register from './component/Register'; 
-import ProfileScreen from './component/ProfileScreen'; // Import the new component
+import ProfileScreen from './component/ProfileScreen'; 
+import AccountSettingsScreen from './component/AccountSettingsScreen'; 
 
 const Stack = createStackNavigator();
 
@@ -16,17 +17,18 @@ function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-      
+
+        <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="JobGridStack" component={JobGridStack} />
         <Stack.Screen name="Profile" component={ProfileScreen} /> 
-       
-        <Stack.Screen name="Login" component={LoginScreen} />
+        
         <Stack.Screen name="JobDetailsScreen" component={JobDetailsScreen} />
         <Stack.Screen name="ApplyJobPage" component={ApplyJobPage} />
         <Stack.Screen name="AppliedJobGrid" component={AppliedJobGrid} />
         
         <Stack.Screen name="Registration" component={Register} />
-        
+        <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} /> 
+     
 
       </Stack.Navigator>
     </NavigationContainer>

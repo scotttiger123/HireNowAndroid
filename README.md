@@ -80,6 +80,7 @@ To learn more about React Native, take a look at the following resources:
 
 
 // =============  While Working For Drawer Menu ============================//
+react-native init HireNowEmployer --version="0.72.8"
 
 npm install
 
