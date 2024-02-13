@@ -467,6 +467,7 @@ const handleSaveWorkExperience = async () => {
       formData.append('phone', profileInfo.phone);
       formData.append('headline', profileInfo.headline);
       formData.append('postal_code', profileInfo.postalCode);
+      formData.append('city', profileInfo.city);
       
       console.log(storedUserId);
       const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-profile-info', {
@@ -725,12 +726,28 @@ const handleSaveWorkExperience = async () => {
                             <TouchableOpacity onPress={() => handleDeleteCertification('candidate_work_experiences',experience.id)} style={styles.deleteButton}>
                               <Icon name="trash" size={18} color="gray" />
                             </TouchableOpacity>
-                          </View>  
-                          <Text style={styles.text}>Job Title: {experience.job_title}</Text>
-                          <Text style={styles.text}>Company: {experience.company_name}</Text>
-                          <Text style={styles.text}>Start Date: {experience.start_date}</Text>
-                          <Text style={styles.text}>End Date: {experience.end_date}</Text>
-                          <Text style={styles.text}>Description: {experience.description}</Text>
+                          </View> 
+                          <View style={styles.fieldContainer}>
+                                  <Text style={styles.label}>Job Title:</Text>
+                                  <Text style={styles.text}>{experience.job_title}</Text>
+                                </View>
+                                <View style={styles.fieldContainer}>
+                                  <Text style={styles.label}>Company:</Text>
+                                  <Text style={styles.text}>{experience.company_name}</Text>
+                                </View>
+                                <View style={styles.fieldContainer}>
+                                  <Text style={styles.label}>Start Date:</Text>
+                                  <Text style={styles.text}>{experience.start_date}</Text>
+                                </View>
+                                <View style={styles.fieldContainer}>
+                                  <Text style={styles.label}>End Date:</Text>
+                                  <Text style={styles.text}>{experience.end_date}</Text>
+                                </View>
+                                <View style={styles.fieldContainer}>
+                                  <Text style={styles.label}>Description:</Text>
+                                  <Text style={styles.text}>{experience.description}</Text>
+                                </View>
+
                       </View>
                     ))}
 

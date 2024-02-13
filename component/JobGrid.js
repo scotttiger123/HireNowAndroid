@@ -1,5 +1,5 @@
 import React, { useEffect, useState ,} from 'react';
-import { View, FlatList, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, ActivityIndicator, Image } from 'react-native';
+import { View, FlatList, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, ActivityIndicator, Image  } from 'react-native';
 import { Card ,Button  } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useRoute ,useNavigation  } from '@react-navigation/native';
@@ -108,7 +108,7 @@ const JobGrid = () => {
               {location && (
                 <View style={[styles.detailItem, { flexDirection: 'row', alignItems: 'center' }]}>
                   <Icon name="location-on" size={20} color="black" style={{ marginRight: 5 }} />
-                  <Text style={styles.detailText}>{capitalizeEachWord(location)}</Text>
+                  <Text style={styles.detailText}>{location}</Text>
                 </View>
               )}
               {item.min_salary > 0 && item.max_salary && (
@@ -120,7 +120,7 @@ const JobGrid = () => {
               {item.job_shift !== '0'  && (
                 <View style={[styles.detailItem, { flexDirection: 'row', alignItems: 'center' }]}>
                   <Icon name="timer" size={20} color="black" style={{ marginRight: 5,marginLeft:5 }} />
-                  <Text style={styles.detailText}>{capitalizeEachWord(item.job_shift)}</Text>
+                  <Text style={styles.detailText}>{item.job_shift}</Text>
                 </View>
               )}
             </View>
@@ -139,6 +139,12 @@ const JobGrid = () => {
   };
   
   
+  
+  
+  
+  
+    
+ 
 
   const updateSelectedValues = (value, filterType) => {
     let processedValue = value;
@@ -194,7 +200,7 @@ const JobGrid = () => {
   };
   return (
     
-    <View style={{ flex: 1, backgroundColor: 'white', padding: 10, alignItems: 'center' }}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
       <Image
         source={require('./images/HeroImage.jpg')} 
         style={{ width: '100%', height: 150 }}

@@ -10,16 +10,20 @@ import AppliedJobGrid from './component/AppliedJobsGrid';
 import Register from './component/Register'; 
 import ProfileScreen from './component/ProfileScreen'; 
 import AccountSettingsScreen from './component/AccountSettingsScreen'; 
+import MainTabScreen from './component/MainTabScreen'; 
 
 const Stack = createStackNavigator();
+
 
 function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-
+        
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="MainTabScreen" component={MainTabScreen} />
         <Stack.Screen name="JobGridStack" component={JobGridStack} />
+        
         <Stack.Screen name="Profile" component={ProfileScreen} /> 
         
         <Stack.Screen name="JobDetailsScreen" component={JobDetailsScreen} />

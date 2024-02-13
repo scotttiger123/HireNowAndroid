@@ -11,7 +11,7 @@ const RegisterPage = ({ navigation }) => {
   const [modalMessage, setModalMessage] = useState('');
 
   const handleRegister = async () => {
-
+ 
     try {
       const apiUrl = `https://jobs.dev.britmarketing.co.uk/api/register?fullName=${fullName}&email=${email}&phone=${phone}&password=${password}&confirmPassword=${confirmPassword}`;
       const response = await fetch(apiUrl);
@@ -19,6 +19,7 @@ const RegisterPage = ({ navigation }) => {
       console.log(result);
       // Handle the response from the server
       if (result && result.error) {
+        
         console.log('Registration unsuccessful:', result.error);
       
         if (result.error.email) {

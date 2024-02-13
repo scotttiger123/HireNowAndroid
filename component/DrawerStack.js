@@ -1,21 +1,26 @@
-// JobGridStack.js
 import React, { useEffect, useState } from 'react';
 import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { createDrawerNavigator, DrawerItem } from '@react-navigation/drawer';
 import JobGrid from './JobGrid';
 import AppliedJobsGrid from './AppliedJobsGrid';
 import AccountSettingsScreen from './AccountSettingsScreen';
+import NotificationScreen from './NotificationScreen';
 
 import Profile from './ProfileScreen';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
+
+
 const Drawer = createDrawerNavigator();
+const Tab = createMaterialBottomTabNavigator();
 
 const CustomDrawerContent = (props) => {
-  const { navigation } = props;
+  const { navigation, state } = props;
   const [userName, setUserName] = useState('User Name');
   const [userId, setUserId] = useState(null); // Add userId state
+  const [focusedRoute, setFocusedRoute] = useState('');
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('state', (e) => {
@@ -29,6 +34,11 @@ const CustomDrawerContent = (props) => {
 
     return unsubscribe;
   }, [navigation]);
+
+  useEffect(() => {
+    const focusedRouteName = state.routes[state.index].name;
+    setFocusedRoute(focusedRouteName);
+  }, [state]);
 
   const handleSignOut = () => {
     navigation.navigate('Login');
@@ -44,49 +54,92 @@ const CustomDrawerContent = (props) => {
       <View style={styles.divider} />
       <DrawerItem
         label="Sign Out"
-        icon={() => <Icon name="exit-to-app" size={20} color="#000" />}
+        icon={({ color }) => <Icon name="exit-to-app" size={26} color={focusedRoute === 'SignOut' ? 'white' : '#696969'} />}
         onPress={handleSignOut}
       />
     </DrawerContentScrollView>
   );
 };
 
-const JobGridStack = () => (
-  <Drawer.Navigator initialRouteName="Jobs" drawerContent={(props) => <CustomDrawerContent {...props} />}>
-    <Drawer.Screen
+const MainTabScreen = () => (
+  <Tab.Navigator
+    initialRouteName="Jobs"
+    shifting={true}
+    activeColor="#f0edf6"
+    inactiveColor="#3e2465"
+    barStyle={{ backgroundColor: '#694fad' }}
+  >
+    <Tab.Screen
       name="Jobs"
       component={JobGrid}
       options={{
-        drawerLabel: 'Jobs',
-        drawerIcon: ({ color, size }) => <Icon name="search" size={size} color={color} />,
+        tabBarLabel: 'Live Jobs',
+        tabBarIcon: ({ color }) => <Icon name="search" color={color} size={26} />,
       }}
     />
-    <Drawer.Screen
-  name="My Profile"
-  component={Profile}
-  options={{
-    drawerLabel: 'My Profile',
-    drawerIcon: ({ color, size }) => <Icon name="person" size={size} color={color} />,
-  }}
-/>
-
-    <Drawer.Screen
+    <Tab.Screen
+      name="Profile"
+      component={Profile}
+      options={{
+        tabBarLabel: 'My Profile',
+        tabBarIcon: ({ color }) => <Icon name="person" color={color} size={26} />,
+      }}
+    />
+    <Tab.Screen
       name="Applied Jobs"
       component={AppliedJobsGrid}
-      initialParams={{ userId: null }} // Set initialParams with userId
       options={{
-        drawerLabel: 'Applied Jobs',
-        drawerIcon: ({ color, size }) => <Icon name="assignment" size={size} color={color} />,
+        tabBarLabel: 'Applied Jobs',
+        tabBarIcon: ({ color }) => <Icon name="assignment" color={color} size={26} />,
       }}
     />
-    <Drawer.Screen
-        name="Account Settings"
-        component={AccountSettingsScreen}
-        options={{
-          drawerLabel: 'Account Settings',
-          drawerIcon: ({ color, size }) => <Icon name="settings" size={size} color={color} />,
-        }}
-      />
+    <Tab.Screen
+      name="Notifications"
+      component={NotificationScreen}
+      options={{
+        tabBarLabel: 'Notifications',
+        tabBarIcon: ({ color }) => <Icon name="notifications" color={color} size={26} />,
+      }}
+    />
+  </Tab.Navigator>
+);
+
+const JobGridStack = () => (
+<Drawer.Navigator
+    drawerContent={(props) => <CustomDrawerContent {...props} />}
+    initialRouteName="Jobs"
+    screenOptions={{
+      headerShown: true,
+      headerStyle: { backgroundColor: '#694fad' },
+      headerTintColor: '#fff',
+      headerTitleAlign: 'center',
+      headerTitle: () => (
+        <View style={styles.headerContainer}>
+          {/* <Image style={styles.logo} source={require('./images/logo.png')} /> */}
+          
+          <Text style={[styles.headerText, { color: '#fff' }]}>HIRE NOW</Text>
+        </View>
+      ),
+    }}
+  >
+    <Drawer.Screen 
+      name="Jobs" 
+      component={MainTabScreen} 
+      options={{
+        drawerIcon: ({ color }) => (
+          <Icon name="work" size={26} color={color} />
+        ),
+      }}
+    />
+    <Drawer.Screen 
+      name="Account Settings" 
+      component={AccountSettingsScreen} 
+      options={{
+        drawerIcon: ({ color }) => (
+          <Icon name="settings" size={26} color={color} />
+        ),
+      }}
+    />
   </Drawer.Navigator>
 );
 

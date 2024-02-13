@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, StyleSheet, Text ,Alert  } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text ,Alert ,Modal ,TouchableOpacity ,ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import getCsrfToken from './csrfTokenUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,13 +10,17 @@ const AccountSettingsScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const csrfToken = await getCsrfToken();
         const storedUserId = await AsyncStorage.getItem('userId');
-        console.log(storedUserId);
+        
+        console.log("session id user ",storedUserId);
         const response = await fetch(`https://jobs.dev.britmarketing.co.uk/api/get-default-profile-info?user_id=${storedUserId}`, {
           method: 'GET',
           headers: {
@@ -25,11 +29,12 @@ const AccountSettingsScreen = () => {
           },
         });
         const data = await response.json();
-        console.log(data);
-        setPhoneNumber(data.phoneNumber);
-        setUsername(data.username);
-        setPassword(data.password);
-        setEmail(data.email);
+        
+        setPhoneNumber(data.data.user_info.phone);
+        setUsername(data.data.user_info.name);
+        setPassword(data.data.user_info.salt);
+        setEmail(data.data.email);
+        
       } catch (error) {
         console.error('Error fetching profile information:', error);
       }
@@ -62,6 +67,7 @@ const AccountSettingsScreen = () => {
 
   const handleUpdate = async () => {
     try {
+      setIsLoading(true);
 
       await showAlert();
       const csrfToken = await getCsrfToken();
@@ -85,19 +91,45 @@ const AccountSettingsScreen = () => {
       if (!response) {
         throw new Error('Failed to update profile');
       }
-  
       const responseData = await response.json();
-      console.log(responseData); // Handle response data as needed
-  
-      // Optionally, you can navigate to a different screen or show a success message
+      const errors = responseData.errors;
+
+      if (errors) {
+        let errorMessage = 'Error:\n';
+        
+        for (const field in errors) {
+          errorMessage += `${field}: ${errors[field].join(', ')}\n`;
+        }
+        
+        setModalMessage(errorMessage);
+        setModalVisible(true);
+      } else {
+        const { success, message } = responseData;
+        
+        if (success) {
+          setModalMessage(message);
+        } else {
+          setModalMessage(message);
+        }
+        
+        setModalVisible(true);
+      }
+      
+      setIsLoading(false);
+      
     } catch (error) {
       console.error('Error updating profile:', error);
-      // Handle error, show error message, etc.
+      setModalMessage('An unexpected error occurred. Please try again.');
+      setModalVisible(true);
+      setIsLoading(false);
     }
     
 
   };
 
+  const closeModal = () => {
+    setModalVisible(false);
+  };
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Account Settings</Text>
@@ -125,7 +157,6 @@ const AccountSettingsScreen = () => {
           <TextInput
             style={styles.input}
             placeholder="Password"
-            secureTextEntry
             value={password}
             onChangeText={setPassword}
           />
@@ -140,10 +171,33 @@ const AccountSettingsScreen = () => {
             onChangeText={setEmail}
           />
         </View>
-        <View style={styles.buttonContainer}>
-          <Button title="Update" onPress={handleUpdate} />
-        </View>
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#0000ff" />
+        ) : (
+          <View style={styles.buttonContainer}>
+            <Button title="Update" onPress={handleUpdate} />
+          </View>
+        )}
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            
+            <Text style={styles.modalMessage}>{modalMessage}</Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={closeModal}
+            >
+              <Text style={styles.buttonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -202,7 +256,35 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
     margin: 10,
+  },modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+  modalContent: {
+    width: '80%', // You can adjust the width as needed
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalMessage: {
+    fontSize: 18,
+    marginBottom: 20,
+    color: 'black', // You can set the text color to your preference
+  },
+  modalButton: {
+    backgroundColor: '#164081',
+    padding: 10,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+  },buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+
 });
 
 export default AccountSettingsScreen;
