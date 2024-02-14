@@ -21,7 +21,7 @@ const AccountSettingsScreen = () => {
         const storedUserId = await AsyncStorage.getItem('userId');
         
         console.log("session id user ",storedUserId);
-        const response = await fetch(`https://jobs.dev.britmarketing.co.uk/api/get-default-profile-info?user_id=${storedUserId}`, {
+        const response = await fetch(`https://hirenow.site/api/get-default-profile-info?user_id=${storedUserId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -68,64 +68,78 @@ const AccountSettingsScreen = () => {
   const handleUpdate = async () => {
     try {
       setIsLoading(true);
-
-      await showAlert();
-      const csrfToken = await getCsrfToken();
-      const storedUserId = await AsyncStorage.getItem('userId');
   
-      const response = await fetch(`https://jobs.dev.britmarketing.co.uk/api/update-profile`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken,
-        },
-        body: JSON.stringify({
-          user_id: storedUserId,
-          phoneNumber: phoneNumber,
-          username: username,
-          password: password,
-          email: email,
-        }),
-      });
+      showAlert()
+        .then(async () => {
+          const csrfToken = await getCsrfToken();
+          const storedUserId = await AsyncStorage.getItem('userId');
+      
+          const response = await fetch(`https://hirenow.site/api/update-profile`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify({
+              user_id: storedUserId,
+              phoneNumber: phoneNumber,
+              username: username,
+              password: password,
+              email: email,
+            }),
+          });
+      
+          if (!response) {
+            throw new Error('Failed to update profile');
+          }
+          const responseData = await response.json();
+          const errors = responseData.errors;
   
-      if (!response) {
-        throw new Error('Failed to update profile');
-      }
-      const responseData = await response.json();
-      const errors = responseData.errors;
-
-      if (errors) {
-        let errorMessage = 'Error:\n';
-        
-        for (const field in errors) {
-          errorMessage += `${field}: ${errors[field].join(', ')}\n`;
-        }
-        
-        setModalMessage(errorMessage);
-        setModalVisible(true);
-      } else {
-        const { success, message } = responseData;
-        
-        if (success) {
-          setModalMessage(message);
-        } else {
-          setModalMessage(message);
-        }
-        
-        setModalVisible(true);
-      }
-      
-      setIsLoading(false);
-      
+          if (errors) {
+            let errorMessage = 'Error:\n';
+            
+            for (const field in errors) {
+              errorMessage += `${field}: ${errors[field].join(', ')}\n`;
+            }
+            
+            setModalMessage(errorMessage);
+            setModalVisible(true);
+          } else {
+            const { success, message } = responseData;
+            
+            if (success) {
+              setModalMessage(message);
+            } else {
+              setModalMessage(message);
+            }
+            
+            setModalVisible(true);
+          }
+          
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          if (error === 'Update canceled') {
+            // Handle update cancelation
+            setModalMessage('Update canceled. No changes were made.');
+            setModalVisible(true);
+          } else {
+            // Handle other errors
+            console.error('Error updating profile:', error);
+            setModalMessage('An unexpected error occurred. Please try again.');
+            setModalVisible(true);
+          }
+          setIsLoading(false);
+        });
     } catch (error) {
       console.error('Error updating profile:', error);
       setModalMessage('An unexpected error occurred. Please try again.');
       setModalVisible(true);
       setIsLoading(false);
     }
-    
-
   };
+  
+
 
   const closeModal = () => {
     setModalVisible(false);

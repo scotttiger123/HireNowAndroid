@@ -1,7 +1,7 @@
 // csrfTokenUtil.js
 
 const getCsrfToken = async () => {
-    const apiUrl = 'https://jobs.dev.britmarketing.co.uk/csrf-token';
+    const apiUrl = 'https://hirenow.site/csrf-token';
   
     try {
       const response = await fetch(apiUrl, {

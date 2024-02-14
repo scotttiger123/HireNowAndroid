@@ -93,7 +93,7 @@ const ProfileScreen = () => {
   
   const deleteCertification = async (tableName, id) => {
     try {
-      const response = await fetch(`https://jobs.dev.britmarketing.co.uk/api/delete-entry/${tableName}/${id}`, {
+      const response = await fetch(`https://hirenow.site/api/delete-entry/${tableName}/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ const ProfileScreen = () => {
     formData.append('end_date', certificationEndDate);
     formData.append('description', certificationDescription);
     
-      const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-certification', {
+      const response = await fetch('https://hirenow.site/api/save-certification', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -176,7 +176,7 @@ const ProfileScreen = () => {
       formData.append('from_date', fromDate);
       formData.append('to_date', toDate);
     
-      const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-education', {
+      const response = await fetch('https://hirenow.site/api/save-education', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -266,7 +266,7 @@ const ProfileScreen = () => {
 
   const fetchDefaultProfileInfo = async (userId, csrfToken) => {
     try {
-        const response = await fetch(`https://jobs.dev.britmarketing.co.uk/api/get-default-profile-info?user_id=${userId}`, {
+        const response = await fetch(`https://hirenow.site/api/get-default-profile-info?user_id=${userId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -280,7 +280,9 @@ const ProfileScreen = () => {
         
         const responseData = await response.json();
         const profileData = responseData.data; // Accessing the nested 'data' object
-        
+        setSelectedDocument(profileData.profile_image);
+
+        console.log("profile-data",profileData.profile_image);
         setHeadLine(profileData.headline);
         setName(profileData.first_name);
         setEmail(profileData.email);
@@ -322,7 +324,7 @@ const handleSaveSkill = async () => {
         formData.append('skill_name', skillName);
         formData.append('year_of_experience', yearsOfExperience);
         
-        const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-skill', {
+        const response = await fetch('https://hirenow.site/api/save-skill', {
           method: 'POST',
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -362,7 +364,7 @@ const handleSaveWorkExperience = async () => {
     formData.append('to_date', toDate);
     formData.append('description', description);
 
-    const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-work-experience', {
+    const response = await fetch('https://hirenow.site/api/save-work-experience', {
       method: 'POST',
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -413,7 +415,7 @@ const handleSaveWorkExperience = async () => {
         const storedUserId = await AsyncStorage.getItem('userId');
         formData.append('user_id', storedUserId);
   
-        const apiUrl = 'https://jobs.dev.britmarketing.co.uk/api/save-profile-image';
+        const apiUrl = 'https://hirenow.site/api/save-profile-image';
           const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
@@ -424,12 +426,13 @@ const handleSaveWorkExperience = async () => {
           });
   
       console.log(response);
+
       if (!response) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
   
       const responseData = await response.json();
-      console.log(responseData);
+      console.log("save-image-response",responseData);
       
       // Update state with the selected document
       setSelectedDocument(fileData.uri);
@@ -470,7 +473,7 @@ const handleSaveWorkExperience = async () => {
       formData.append('city', profileInfo.city);
       
       console.log(storedUserId);
-      const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-profile-info', {
+      const response = await fetch('https://hirenow.site/api/save-profile-info', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -519,7 +522,7 @@ const handleSaveWorkExperience = async () => {
       formData.append('user_id', storedUserId);
       formData.append('summary', summary);
       
-      const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/save-summary', {
+      const response = await fetch('https://hirenow.site/api/save-summary', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',

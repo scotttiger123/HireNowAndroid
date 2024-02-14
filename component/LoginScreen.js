@@ -12,7 +12,7 @@ const LoginPage = ({ navigation }) => {
   const handleLogin = async () => {
     try {
       setLoading(true);
-      const apiUrl = `https://jobs.dev.britmarketing.co.uk/api/loginApp?email=${username}&password=${password}`;
+      const apiUrl = `https://hirenow.site/api/loginApp?email=${username}&password=${password}`;
       const response = await fetch(apiUrl);
       const responseData = await response.json();
 

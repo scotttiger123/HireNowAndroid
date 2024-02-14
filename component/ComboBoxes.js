@@ -56,7 +56,7 @@ const ComboBoxes = ({ updateSelectedValues, searchJobs }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/comboCounter');
+        const response = await fetch('https://hirenow.site/api/comboCounter');
         const result = await response.json();
         setData(result);
         console.log(result);

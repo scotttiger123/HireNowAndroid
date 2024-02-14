@@ -12,7 +12,7 @@ const JobDetailsScreen = () => {
 
   const fetchCSRFToken = async () => {
     try {
-      const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/csrf-token');
+      const response = await fetch('https://hirenow.site/api/csrf-token');
       const data = await response.json();
       const csrfToken = data.csrf_token;
       return csrfToken;
@@ -36,7 +36,7 @@ const JobDetailsScreen = () => {
 
       const base64Data = await RNFetchBlob.fs.readFile(fileData.uri, 'base64');
 
-      const apiUrl = 'https://jobs.dev.britmarketing.co.uk/api/upload-cv';
+      const apiUrl = 'https://hirenow.site/api/upload-cv';
       const formData = new FormData();
       formData.append('cv', base64Data);
       formData.append('name', fileData.name);

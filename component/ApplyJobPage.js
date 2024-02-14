@@ -59,7 +59,7 @@ const ApplyJobPage = () => {
     
       const csrfToken = await getCsrfToken();
       const storedUserId = await AsyncStorage.getItem('userId');
-      const apiUrl = 'https://jobs.dev.britmarketing.co.uk/api/upload-cv';
+      const apiUrl = 'https://hirenow.site/api/upload-cv';
       const formData = new FormData();
       formData.append('profile_cv','1');
       formData.append('user_id', storedUserId); 
@@ -114,7 +114,7 @@ const ApplyJobPage = () => {
 
       const fetchCSRFToken = async () => {
         try {
-          const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/csrf-token');
+          const response = await fetch('https://hirenow.site/api/csrf-token');
           const data = await response.json();
           const csrfToken = data.csrf_token;
           console.log("csrf",csrfToken);
@@ -129,7 +129,7 @@ const ApplyJobPage = () => {
       const fileData = selectedFile[0];
       const base64Data = await RNFetchBlob.fs.readFile(fileData.uri, 'base64');
 
-      const apiUrl = 'https://jobs.dev.britmarketing.co.uk/api/upload-cv';
+      const apiUrl = 'https://hirenow.site/api/upload-cv';
       const formData = new FormData();
       formData.append('cv', base64Data);
       formData.append('name', fileData.name);
@@ -168,7 +168,7 @@ const ApplyJobPage = () => {
   );
 
   const showErrorMessage = () => {
-    setModalMessage('Please upload a CV');
+    setModalMessage('Please select any one CV.');
     setModalVisible(true);
   };
   
@@ -308,7 +308,7 @@ const ApplyJobPage = () => {
   >
     <View style={styles.uploadButtonContainer}>
       <Icon name="person" size={24} color="white" style={styles.iconStyle} />
-      <Text style={styles.uploadButtonText}>My Profile</Text>
+      <Text style={styles.uploadButtonText}>My Profile CV</Text>
     </View>
   </TouchableOpacity>
 </View>

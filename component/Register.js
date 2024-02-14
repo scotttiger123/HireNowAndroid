@@ -13,7 +13,7 @@ const RegisterPage = ({ navigation }) => {
   const handleRegister = async () => {
  
     try {
-      const apiUrl = `https://jobs.dev.britmarketing.co.uk/api/register?fullName=${fullName}&email=${email}&phone=${phone}&password=${password}&confirmPassword=${confirmPassword}`;
+      const apiUrl = `https://hirenow.site/api/register?fullName=${fullName}&email=${email}&phone=${phone}&password=${password}&confirmPassword=${confirmPassword}`;
       const response = await fetch(apiUrl);
       const result = await response.json();
       console.log(result);

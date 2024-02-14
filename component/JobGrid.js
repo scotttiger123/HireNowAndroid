@@ -33,7 +33,7 @@ const JobGrid = () => {
     try {
       setIsLoading(true); // Set loading to true while searching
       
-      const response = await fetch('https://jobs.dev.britmarketing.co.uk/api/jobs');
+      const response = await fetch('https://hirenow.site/api/jobs');
       const data = await response.json();
       setJobs(data.jobs);
       setIsLoading(false); // Set loading to false after searching
@@ -46,7 +46,7 @@ const JobGrid = () => {
       setIsLoading(true); // Set loading to true while searching
       console.log(selectedJobType);
       
-      const apiUrl = `https://jobs.dev.britmarketing.co.uk/api/search-jobs-filter?keywords=${searchText}&location=${locationText}${
+      const apiUrl = `https://hirenow.site/api/search-jobs-filter?keywords=${searchText}&location=${locationText}${
         selectedJobType ? `&selectedJobType=${selectedJobType}` : ''
       }${
         selectedPostedBy ? `&selectedPostedBy=${selectedPostedBy}` : ''

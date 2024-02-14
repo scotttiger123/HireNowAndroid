@@ -29,7 +29,7 @@ const AppliedJobGrid = () => {
     console.log('Fetching applied jobs for UserId:', userId);
     const fetchAppliedJobs = async () => {
       try {
-        const response = await fetch(`https://jobs.dev.britmarketing.co.uk/api/job-applications/${userId}`);
+        const response = await fetch(`https://hirenow.site/api/job-applications/${userId}`);
         const data = await response.json();
         console.log(data);
         if (data && data.job_applications) {
