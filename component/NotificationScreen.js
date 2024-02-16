@@ -3,11 +3,8 @@ import { View, Text, FlatList, StyleSheet } from 'react-native';
 
 // Dummy data for notifications
 const notifications = [
-  { id: 1, message: 'Your application for Software Engineer has been submitted.' },
-  { id: 2, message: 'New message from Tech Solutions Inc.: Please schedule an interview.' },
-  { id: 3, message: 'Reminder: Your interview for UX/UI Designer is tomorrow at 10 AM.' },
-  { id: 4, message: 'New job alert: Data Analyst position available at Data Insights Co.' },
-  { id: 5, message: 'Congratulations! You have been selected for the Financial Analyst position.' },
+  
+  
 ];
 
 const NotificationScreen = () => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Button,ScrollView ,Modal} from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import DocumentPicker from 'react-native-document-picker';
@@ -28,6 +28,18 @@ const ApplyJobPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFile1, setSelectedFile1] = useState(null);
+  useEffect(() => {
+    
+    if (job.qualification === 'no' ) {
+      setFormData({ ...formData, education: 'Yes' });
+    }
+    if (job.minExperience === 'no' || job.minExperience === '0' ) {
+      setFormData({ ...formData, experience: 'Yes' });
+    }
+    if (job.minAge === 'no' || job.minAge === '0' ) {
+      setFormData({ ...formData, ageRequirements: 'Yes' });
+    }
+  }, []);
   const handleNext = () => {
     if (
       formData.education.toLowerCase() === 'yes' &&
@@ -216,25 +228,28 @@ const ApplyJobPage = () => {
           
 
           {/* Step 1 Form Fields - Education */}
+          {job.qualification !== 'no' && (
           <View style={styles.questionContainer}>
-          <Text style={styles.questionText}>Do you have education High School?</Text>
-            <View style={styles.radioButtonsWrapper}>
-              <TouchableOpacity
-                style={formData.education === 'Yes' ? styles.radioButtonSelected : styles.radioButton}
-                onPress={() => setFormData({ ...formData, education: 'Yes' })}
-              >
-                <Text style={styles.radioLabel}>Yes</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={formData.education === 'No' ? styles.radioButtonSelected : styles.radioButton}
-                onPress={() => setFormData({ ...formData, education: 'No' })}
-              >
-                <Text style={styles.radioLabel}>No</Text>
-              </TouchableOpacity>
-            </View>
+              <Text style={styles.questionText}>Do you have {job.qualification }?</Text>
+                <View style={styles.radioButtonsWrapper}>
+                  <TouchableOpacity
+                    style={formData.education === 'Yes' ? styles.radioButtonSelected : styles.radioButton}
+                    onPress={() => setFormData({ ...formData, education: 'Yes' })}
+                  >
+                    <Text style={styles.radioLabel}>Yes</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={formData.education === 'No' ? styles.radioButtonSelected : styles.radioButton}
+                    onPress={() => setFormData({ ...formData, education: 'No' })}
+                  >
+                    <Text style={styles.radioLabel}>No</Text>
+                  </TouchableOpacity>
+                </View>
           </View>
+          )} 
 
           {/* Step 1 Form Fields - Experience */}
+          {job.minExperience !== 'no' || job.minExperience !== '0' && (
           <View style={styles.questionContainer}>
           <Text style={styles.questionText}>Do you have experience (Between {job.minExperience} and {job.maxExperience} years)?</Text>
             <View style={styles.radioButtonsWrapper}>
@@ -252,8 +267,9 @@ const ApplyJobPage = () => {
               </TouchableOpacity>
             </View>
           </View>
-
+          )} 
           {/* Step 1 Form Fields - Age Requirements */}
+          {job.minAge !== 'no' || job.minAge !== '0' && (
           <View style={styles.questionContainer}>
           <Text style={styles.questionText}>Do you meet the age requirements (Between {job.minAge} and {job.maxAge} years)?</Text>
             <View style={styles.radioButtonsWrapper}>
@@ -271,6 +287,7 @@ const ApplyJobPage = () => {
               </TouchableOpacity>
             </View>
           </View>
+          )} 
         </View>
       )}
 

@@ -148,6 +148,9 @@ const AccountSettingsScreen = () => {
     <View style={styles.container}>
       <Text style={styles.header}>Account Settings</Text>
       <View style={styles.experienceContainer}>
+        <View style={styles.label}>
+          <Text>Phone Number</Text>
+        </View>
         <View style={styles.inputContainer}>
           <Icon name="phone" size={24} color="black" style={styles.icon} />
           <TextInput
@@ -156,6 +159,9 @@ const AccountSettingsScreen = () => {
             value={phoneNumber}
             onChangeText={setPhoneNumber}
           />
+        </View>
+        <View style={styles.label}>
+          <Text>User Name </Text>
         </View>
         <View style={styles.inputContainer}>
           <Icon name="user" size={24} color="black" style={styles.icon} />
@@ -166,6 +172,9 @@ const AccountSettingsScreen = () => {
             onChangeText={setUsername}
           />
         </View>
+        <View style={styles.label}>
+          <Text>Password </Text>
+        </View>
         <View style={styles.inputContainer}>
           <Icon name="lock" size={24} color="black" style={styles.icon} />
           <TextInput
@@ -174,6 +183,9 @@ const AccountSettingsScreen = () => {
             value={password}
             onChangeText={setPassword}
           />
+        </View>
+        <View style={styles.label}>
+          <Text>Email </Text>
         </View>
         <View style={styles.inputContainer}>
         <Icon name="envelope" size={15.5} color="black" style={styles.icon} />
@@ -217,6 +229,11 @@ const AccountSettingsScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  label: {
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: 'black',
+  },
   container: {
     flex: 1,
     justifyContent: 'center',

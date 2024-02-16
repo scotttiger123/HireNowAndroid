@@ -63,6 +63,7 @@ const ProfileScreen = () => {
 
   
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -121,7 +122,7 @@ const ProfileScreen = () => {
   const handleSaveCertification  = async () => {
 
     try {
-      setLoading(true); // Set loading to true while saving
+      setIsSaving(true); // Set loading to true while saving
     
       const csrfToken = await getCsrfToken();
       const storedUserId = await AsyncStorage.getItem('userId');
@@ -151,19 +152,19 @@ const ProfileScreen = () => {
       console.log(responseData);
       await fetchDefaultProfileInfo(storedUserId, csrfToken);
       
-      setIsEducationModalVisible(false);
+      setIsCertificationModalVisible(false);
     } catch (error) {
       console.error('Error saving education:', error.message);
     } finally {
-      setLoading(false); // Set loading back to false after save attempt
+      setIsSaving(false); // Set loading back to false after save attempt
     }
   }
 
   const handleSaveEducation = async () => {
     
     try {
-      setLoading(true); // Set loading to true while saving
-    
+      setIsSaving(true); 
+
       const csrfToken = await getCsrfToken();
       const storedUserId = await AsyncStorage.getItem('userId');
       const formData = new FormData();
@@ -198,7 +199,7 @@ const ProfileScreen = () => {
     } catch (error) {
       console.error('Error saving education:', error.message);
     } finally {
-      setLoading(false); // Set loading back to false after save attempt
+      setIsSaving(false); 
     }
    
   };  
@@ -314,8 +315,8 @@ const ProfileScreen = () => {
 };
 
 const handleSaveSkill = async () => { 
-  try {
-        setLoading(true);
+  try { 
+        setIsSaving(true);
         const csrfToken = await getCsrfToken();
         const storedUserId = await AsyncStorage.getItem('userId');
         const formData = new FormData();
@@ -341,18 +342,19 @@ const handleSaveSkill = async () => {
 
         await fetchDefaultProfileInfo(storedUserId, csrfToken);
 
-        setIsSummaryModalVisible(false);
+        setIsSkillModalVisible(false);
       } catch (error) {
         console.error('Error saving summary:', error.message);
       } finally {
-        setLoading(false);
+        setIsSaving(false);
       }
 
 } 
 
 const handleSaveWorkExperience = async () => {
   try {
-    setLoading(true); // Set loading to true while saving
+    setIsSaving(true);
+    
     const csrfToken = await getCsrfToken();
     const storedUserId = await AsyncStorage.getItem('userId');
     const formData = new FormData();
@@ -383,19 +385,14 @@ const handleSaveWorkExperience = async () => {
 
     await fetchDefaultProfileInfo(storedUserId, csrfToken);
   
-
-      
-    // setJobTitle('');
-    // setCompany('');
-    // setFromDate('');
-    // setToDate('');
-    // setDescription('');
-
     setIsWorkExperienceModalVisible(false);
   } catch (error) {
     console.error('Error saving work experience:', error.message);
+
   } finally {
-    setLoading(false); // Set loading back to false after save attempt
+    
+    setIsSaving(false); 
+  
   }
 };
 
@@ -458,7 +455,7 @@ const handleSaveWorkExperience = async () => {
 
   const handleSaveProfile = async () => {
     try {
-      setLoading(true); // Set loading to true while saving
+      setIsSaving(true); 
       const csrfToken = await getCsrfToken();
       const storedUserId = await AsyncStorage.getItem('userId');
       const formData = new FormData();
@@ -499,7 +496,7 @@ const handleSaveWorkExperience = async () => {
     } catch (error) {
       console.error('Error saving profile information:', error.message);
     } finally {
-      setLoading(false); // Set loading back to false after save attempt
+      setIsSaving(false); 
     }
   };
   
@@ -514,7 +511,7 @@ const handleSaveWorkExperience = async () => {
   
   const handleSaveSummary = async () => {
     try {
-      setLoading(true);
+      setIsSaving(true);
       const csrfToken = await getCsrfToken();
       const storedUserId = await AsyncStorage.getItem('userId');
       const formData = new FormData();
@@ -543,7 +540,7 @@ const handleSaveWorkExperience = async () => {
     } catch (error) {
       console.error('Error saving summary:', error.message);
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
   
@@ -656,14 +653,10 @@ const handleSaveWorkExperience = async () => {
                     <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={handleCancelEdit}>
                       <Text style={styles.buttonText}>Cancel</Text>
                     </TouchableOpacity>
-                      {loading ? (
-                        <ActivityIndicator size="large" color="#0000ff" />
-                      ) : (
-                        <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveProfile}>
-                          <Text style={styles.buttonText}>Save</Text>
+                      
+                        <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveProfile} disabled={isSaving}>
+                          <Text style={styles.buttonText}>{isSaving ? 'Saving...' : 'Save'}</Text>
                         </TouchableOpacity>
-                      )}
-                
                   </View>
                 </View>
               </View>
@@ -705,13 +698,10 @@ const handleSaveWorkExperience = async () => {
                     <TouchableOpacity style={[styles.modalButton,styles.cancelButton]} onPress={() => setIsSummaryModalVisible(false)}>
                       <Text style={styles.buttonText}>Cancel</Text>
                     </TouchableOpacity>
-                            {loading ? (
-                              <ActivityIndicator size="large" color="#0000ff" />
-                            ) : (
-                              <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveSummary}>
-                                <Text style={styles.buttonText}>Save</Text>
-                              </TouchableOpacity>
-                      )}
+                      <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveSummary} disabled={isSaving}>
+                          <Text style={styles.buttonText}>{isSaving ? 'Saving...' : 'Save'}</Text>
+                      </TouchableOpacity>
+                      
                   </View>
                 </View>
               </View>
@@ -827,8 +817,11 @@ const handleSaveWorkExperience = async () => {
                       <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setIsWorkExperienceModalVisible(false)}>
                         <Text style={styles.buttonText}>Cancel</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveWorkExperience}>
-                        <Text style={styles.buttonText}>Save</Text>
+                      <TouchableOpacity style={[styles.modalButton, styles.saveButton]} 
+                        onPress={handleSaveWorkExperience}
+                        disabled={isSaving}
+                        >
+                        <Text style={styles.buttonText}>{isSaving ? 'Saving...' : 'Save'}</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -955,8 +948,11 @@ const handleSaveWorkExperience = async () => {
                   <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setIsEducationModalVisible(false)}>
                     <Text style={styles.buttonText}>Cancel</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveEducation}>
-                    <Text style={styles.buttonText}>Save</Text>
+                  <TouchableOpacity style={[styles.modalButton, styles.saveButton]} 
+                        onPress={handleSaveEducation}
+                        disabled={isSaving}
+                        >
+                        <Text style={styles.buttonText}>{isSaving ? 'Saving...' : 'Save'}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -993,8 +989,8 @@ const handleSaveWorkExperience = async () => {
   {editingSection === 'Skills' && (
     <Modal visible={isModalVisible} animationType="slide">
       {/* Edit Skill Modal content goes here */}
-      <TouchableOpacity onPress={handleSaveSkill}>
-        <Text>Save</Text>
+      <TouchableOpacity onPress={handleSaveSkill} disabled={isSaving}>
+      <Text style={styles.buttonText}>{isSaving ? 'Saving...' : 'Save'}</Text>
       </TouchableOpacity>
     </Modal>
   )}
@@ -1026,13 +1022,9 @@ const handleSaveWorkExperience = async () => {
           <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setIsSkillModalVisible(false)}>
             <Text style={styles.buttonText}>Cancel</Text>
           </TouchableOpacity>
-          {loading ? (
-            <ActivityIndicator size="large" color="#0000ff" />
-          ) : (
-            <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveSkill}>
-              <Text style={styles.buttonText}>Save</Text>
+            <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveSkill} disabled={isSaving} >
+                <Text style={styles.buttonText}>{isSaving ? 'Saving...' : 'Save'}</Text>
             </TouchableOpacity>
-          )}
         </View>
       </View>
     </View>
@@ -1130,13 +1122,9 @@ const handleSaveWorkExperience = async () => {
               <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setIsCertificationModalVisible(false)}>
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
-              {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" />
-              ) : (
-                <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveCertification}>
-                  <Text style={styles.buttonText}>Save</Text>
+                <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveCertification} disabled={isSaving}>
+                  <Text style={styles.buttonText}>{isSaving ? 'Saving...' : 'Save'}</Text>
                 </TouchableOpacity>
-              )}
             </View>
           </View>
         </View>

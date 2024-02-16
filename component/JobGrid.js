@@ -137,13 +137,6 @@ const JobGrid = () => {
       </TouchableOpacity>
     );
   };
-  
-  
-  
-  
-  
-  
-    
  
 
   const updateSelectedValues = (value, filterType) => {

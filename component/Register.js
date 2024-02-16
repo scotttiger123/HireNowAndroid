@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Modal, Button } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Modal, Button,ActivityIndicator  } from 'react-native';
 
 const RegisterPage = ({ navigation }) => {
   const [fullName, setFullName] = useState('');
@@ -9,10 +9,16 @@ const RegisterPage = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
-
+  const [isLoading, setIsLoading] = useState(false);
   const handleRegister = async () => {
- 
+    
+    if (password !== confirmPassword) {
+      setModalMessage("Passwords don't match.");
+      setModalVisible(true);
+      return;
+    }
     try {
+      setIsLoading(true);
       const apiUrl = `https://hirenow.site/api/register?fullName=${fullName}&email=${email}&phone=${phone}&password=${password}&confirmPassword=${confirmPassword}`;
       const response = await fetch(apiUrl);
       const result = await response.json();
@@ -48,6 +54,8 @@ const RegisterPage = ({ navigation }) => {
       console.error('Registration error:', error.message);
       setModalMessage('An unexpected error occurred. Please try again.');
       setModalVisible(true);
+     } finally {
+      setIsLoading(false); // Hide loader regardless of success or failure
     }
   };
   const closeModal = () => {
@@ -97,8 +105,12 @@ const RegisterPage = ({ navigation }) => {
         value={confirmPassword}
         onChangeText={(text) => setConfirmPassword(text)}
       />
-      <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
+      <TouchableOpacity style={styles.registerButton} onPress={handleRegister} disabled={isLoading}>
+        {isLoading ? (
+          <ActivityIndicator size="small" color="white" /> 
+        ) : (
+          <Text style={styles.buttonText}>Register</Text>
+        )}
       </TouchableOpacity>
       <View style={styles.loginContainer}>
         <Text style={styles.loginText}>Already have an account? </Text>
@@ -194,7 +206,7 @@ const styles = StyleSheet.create({
   modalMessage: {
     fontSize: 18,
     marginBottom: 20,
-    color: 'black', // You can set the text color to your preference
+    color: 'black', 
   },
   modalButton: {
     backgroundColor: '#164081',
