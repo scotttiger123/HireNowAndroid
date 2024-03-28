@@ -55,13 +55,25 @@ const LoginPage = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Image style={styles.logo} source={require('./images/logo.png')} resizeMode="contain" />
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your username"
-        value={username}
-        onChangeText={(text) => setUsername(text)}
-      />
+        <View style={styles.imageContainger}>
+          <Image style={styles.logo} source={require('./images/logo.png')} resizeMode="contain" />
+        </View>
+          <View style={styles.labelContianer}>
+              <Text style={styles.label}>User Name</Text>
+          </View>
+          <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your username"
+            value={username}
+            onChangeText={(text) => setUsername(text)}
+          />
+       </View>   
+       
+       <View style={styles.labelContianer}>
+          <Text style={styles.label}>Password </Text>
+        </View>
+      <View style={styles.inputContainer}>
       <TextInput
         style={styles.input}
         placeholder="Enter your password"
@@ -69,6 +81,8 @@ const LoginPage = ({ navigation }) => {
         value={password}
         onChangeText={(text) => setPassword(text)}
       />
+      </View>
+      
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         {loading ? (
           <ActivityIndicator color="white" />
@@ -76,7 +90,7 @@ const LoginPage = ({ navigation }) => {
           <Text style={styles.buttonText}>Login</Text>
         )}
       </TouchableOpacity>
-
+      
       <Modal
         animationType="slide"
         transparent={true}
@@ -107,7 +121,20 @@ const LoginPage = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // ... your existing styles
+  
+  inputContainer: {
+    flexDirection: 'row',
+   
+  },
+  labelContianer:{
+    alignItems: 'right',
+  },
+  
+  label: {
+    fontWeight: 'bold',
+    color: '#1e282c',
+    margin:5,
+  },
   loginButton: {
     backgroundColor: '#164081',
     padding: 10,
@@ -157,10 +184,19 @@ const styles = StyleSheet.create({
     color: '#164081', // Set link color to #164081
     fontWeight: 'bold',
   },
+  imageContainger: {
+     justifyContent: 'center',
+     alignItems: 'center',
+     paddingTop: 100, // Reduced top padding
+
+   },
+
   container: {
+    
+    backgroundColor: 'white',
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // justifyContent: 'center',
+    // alignItems: 'center',
     padding: 20, // Reduced top padding
     backgroundColor: 'white', // Set white background
   },
@@ -174,18 +210,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 16,
   },
+  placeholder: {
+    color: '#1e282c',
+  },
   input: {
     width: '100%',
     height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
+    color: '#333',
     borderRadius: 8,
-    marginBottom: 12,
-    padding: 8,
+    padding: 10,
+    margin:5,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+    // Add a bottom shadow
+    borderBottomWidth: 2,
+    borderBottomColor: '#164081',
   },
   loginButton: {
     backgroundColor: '#164081', // Set button color to #164081
     padding: 10,
+    margin:5,
+    marginTop:10,
     borderRadius: 8,
     width: '100%',
     alignItems: 'center',
@@ -197,9 +249,14 @@ const styles = StyleSheet.create({
   registerContainer: {
     flexDirection: 'row',
     marginTop: 16, // Remove this line to reduce top margin
+    
   },
   registerText: {
+    
+    marginLeft:15,
     fontSize: 14,
+    color: '#333',
+    
   },
   registerLink: {
     fontSize: 14,

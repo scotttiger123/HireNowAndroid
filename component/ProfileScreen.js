@@ -619,30 +619,45 @@ const handleSaveWorkExperience = async () => {
               <View style={styles.modalBackground}>
                 <View style={styles.modalContent}>
                   <Text style={styles.modalHeader}>Edit Profile Information</Text>
+                  <View style={styles.labelContianer}>
+                    <Text style={styles.label}>Headline / CV Title</Text>
+                  </View>
                   <TextInput
                     style={styles.modalInput}
                     placeholder="Headline / CV Title"
                     value={profileInfo.headline}
                     onChangeText={(text) => setProfileInfo({ ...profileInfo, headline: text })}
                   />
+                  <View style={styles.labelContianer}>
+                    <Text style={styles.label}>Name</Text>
+                  </View>
                   <TextInput
                     style={styles.modalInput}
                     placeholder="Name"
                     value={profileInfo.name}
                     onChangeText={(text) => setProfileInfo({ ...profileInfo, name: text })}
                   />
+                  <View style={styles.labelContianer}>
+                    <Text style={styles.label}>Phone</Text>
+                  </View>
                   <TextInput
                     style={styles.modalInput}
                     placeholder="Phone"
                     value={profileInfo.phone}
                     onChangeText={(text) => setProfileInfo({ ...profileInfo, phone: text })}
                   />
+                  <View style={styles.labelContianer}>
+                    <Text style={styles.label}>City</Text>
+                  </View>
                   <TextInput
                     style={styles.modalInput}
                     placeholder="City"
                     value={profileInfo.city}
                     onChangeText={(text) => setProfileInfo({ ...profileInfo, city: text })}
                   />
+                  <View style={styles.labelContianer}>
+                    <Text style={styles.label}>Postal Code</Text>
+                  </View>
                   <TextInput
                     style={styles.modalInput}
                     placeholder="Postal Code"
@@ -686,6 +701,9 @@ const handleSaveWorkExperience = async () => {
               <View style={styles.modalBackground}>
                 <View style={styles.modalContent}>
                   <Text style={styles.modalHeader}>Edit Summary</Text>
+                  <View style={styles.labelContianer}>
+                    <Text style={styles.label}>Enter Summary</Text>
+                  </View>
                   <TextInput
                     style={[styles.modalInput, { height: 100 }]} // Adjust the height as needed
                     placeholder="Enter summary"
@@ -719,8 +737,8 @@ const handleSaveWorkExperience = async () => {
                             <TouchableOpacity onPress={() => handleDeleteCertification('candidate_work_experiences',experience.id)} style={styles.deleteButton}>
                               <Icon name="trash" size={18} color="gray" />
                             </TouchableOpacity>
-                          </View> 
-                          <View style={styles.fieldContainer}>
+                          </View>
+                                <View style={styles.fieldContainer}>
                                   <Text style={styles.label}>Job Title:</Text>
                                   <Text style={styles.text}>{experience.job_title}</Text>
                                 </View>
@@ -763,18 +781,27 @@ const handleSaveWorkExperience = async () => {
                 <View style={styles.modalBackground}>
                   <View style={styles.modalContent}>
                     <Text style={styles.modalHeader}>Add Work Experience</Text>
+                    <View style={styles.labelContianer}>
+                                <Text style={styles.label}>Job Title</Text>
+                    </View> 
                     <TextInput
                       style={styles.modalInput}
                       placeholder="Job Title*"
                       value={jobTitle}
                       onChangeText={setJobTitle}
                     />
+                    <View style={styles.labelContianer}>
+                                <Text style={styles.label}>Company</Text>
+                    </View> 
                     <TextInput
                       style={styles.modalInput}
                       placeholder="Company"
                       value={company}
                       onChangeText={setCompany}
                     />
+                    <View style={styles.labelContianer}>
+                                <Text style={styles.label}>From Date</Text>
+                    </View> 
                     <View style={styles.dateInputContainer}>
                       <TouchableOpacity onPress={handleFromDatePress}>
                         <TextInput
@@ -784,6 +811,9 @@ const handleSaveWorkExperience = async () => {
                           editable={false}
                         />
                       </TouchableOpacity>
+                      <View style={styles.labelContianer}>
+                                <Text style={styles.label}>To Date</Text>
+                      </View> 
                       <TouchableOpacity onPress={handleToDatePress}>
                         <TextInput
                           style={[styles.modalInput, styles.dateInput]}
@@ -805,6 +835,9 @@ const handleSaveWorkExperience = async () => {
                       onConfirm={handleToDateConfirm}
                       onCancel={() => setShowToDatePicker(false)}
                     />
+                    <View style={styles.labelContianer}>
+                                <Text style={styles.label}>Description</Text>
+                              </View> 
                     <TextInput
                       style={[styles.modalInput, { height: 100 }]} // Adjust height for description
                       placeholder="Description"
@@ -890,30 +923,45 @@ const handleSaveWorkExperience = async () => {
             <View style={styles.modalBackground}>
               <View style={styles.modalContent}>
                 <Text style={styles.modalHeader}>Add Education</Text>
+                <View style={styles.labelContianer}>
+                  <Text style={styles.label}>Level of Education</Text>
+                </View>
                 <TextInput
                   style={styles.modalInput}
                   placeholder="Level of Education*"
                   value={level}
                   onChangeText={setLevel}
                 />
+                <View style={styles.labelContianer}>
+                  <Text style={styles.label}>Feild of Study</Text>
+                </View>
                 <TextInput
                   style={styles.modalInput}
                   placeholder="Field of Study*"
                   value={fieldOfStudy}
                   onChangeText={setFieldOfStudy}
                 />
+                <View style={styles.labelContianer}>
+                  <Text style={styles.label}>School Name</Text>
+                </View>
                 <TextInput
                   style={styles.modalInput}
                   placeholder="School Name*"
                   value={schoolName}
                   onChangeText={setSchoolName}
                 />
+                <View style={styles.labelContianer}>
+                  <Text style={styles.label}>City</Text>
+                </View>
                 <TextInput
                   style={styles.modalInput}
                   placeholder="City*"
                   value={cityedu}
                   onChangeText={setCityedu}
                 />
+                <View style={styles.labelContianer}>
+                  <Text style={styles.label}>From Date</Text>
+                </View>
                 <View style={styles.dateInputContainer}>
                   <TouchableOpacity onPress={handleFromDatePress}>
                     <TextInput
@@ -923,6 +971,9 @@ const handleSaveWorkExperience = async () => {
                       editable={false}
                     />
                   </TouchableOpacity>
+                  <View style={styles.labelContianer}>
+                    <Text style={styles.label}>To Date</Text>
+                  </View>
                   <TouchableOpacity onPress={handleToDatePress}>
                     <TextInput
                       style={[styles.modalInput, styles.dateInput]}
@@ -1005,12 +1056,18 @@ const handleSaveWorkExperience = async () => {
     <View style={styles.modalBackground}>
       <View style={styles.modalContent}>
         <Text style={styles.modalHeader}>Edit Skills</Text>
+        <View style={styles.labelContianer}>
+              <Text style={styles.label}>Skill name</Text>
+        </View>
         <TextInput
           style={styles.modalInput}
           placeholder="Enter skill name"
           value={skillName}
           onChangeText={setSkillName}
         />
+        <View style={styles.labelContianer}>
+              <Text style={styles.label}>Experience</Text>
+        </View>
         <TextInput
           style={styles.modalInput}
           placeholder="Enter years of experience"
@@ -1073,12 +1130,18 @@ const handleSaveWorkExperience = async () => {
         <View style={styles.modalBackground}>
           <View style={styles.modalContent}>
             <Text style={styles.modalHeader}>Add Certification/License</Text>
+            <View style={styles.labelContianer}>
+              <Text style={styles.label}>Certification / License  Name</Text>
+            </View>
             <TextInput
               style={styles.modalInput}
               placeholder="Certification/License Name"
               value={certificationName}
               onChangeText={setCertificationName}
             />
+            <View style={styles.labelContianer}>
+              <Text style={styles.label}>From Date</Text>
+            </View>
              <TouchableOpacity onPress={handleFromDatePress}>
                 <TextInput
                 style={[styles.modalInput, styles.dateInput]}
@@ -1087,6 +1150,9 @@ const handleSaveWorkExperience = async () => {
                 editable={false}
               />
              </TouchableOpacity> 
+             <View style={styles.labelContianer}>
+              <Text style={styles.label}>To Date</Text>
+            </View>
             <TouchableOpacity onPress={handleToDatePress}>
               <TextInput
                 style={[styles.modalInput, styles.dateInput]}
@@ -1097,7 +1163,9 @@ const handleSaveWorkExperience = async () => {
               </TouchableOpacity>
             
              
-            
+            <View style={styles.labelContianer}>
+              <Text style={styles.label}>Description</Text>
+            </View>
             <TextInput
               style={[styles.modalInput, { height: 100 }]}
               placeholder="Description"
@@ -1137,6 +1205,9 @@ const handleSaveWorkExperience = async () => {
 
 
 const styles = StyleSheet.create({
+  labelContianer: { 
+   marginBottom:5,
+  },
   experienceContainer: {
     borderColor: 'lightgray',
     borderWidth: 1,
@@ -1179,6 +1250,7 @@ text: {
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
+    color:'#1e282c'
   },
   modalButtonsContainer: {
     flexDirection: 'row',

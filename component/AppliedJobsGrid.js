@@ -58,11 +58,19 @@ const AppliedJobGrid = () => {
       style={styles.jobItem}
       onPress={() => {
         console.log('Selected Job ID:', item.id);
-        navigation.navigate('JobDetails', { jobId: item.job_post.id });
+        if (item.job_post) { // Check if job_post is not null
+          navigation.navigate('JobDetails', { jobId: item.job_post.id });
+        } else {
+          console.error('Job post data is null for item:', item);
+        }
       }}
     >
-      <Text style={styles.jobTitle}>{item.job_post.jobTitle}</Text>
-      <Text style={styles.company}>{item.job_post.company}</Text>
+      {item.job_post && ( // Check if job_post is not null
+        <>
+          <Text style={styles.jobTitle}>{item.job_post.jobTitle}</Text>
+          <Text style={styles.company}>{item.job_post.company}</Text>
+        </>
+      )}
       <Text style={styles.appliedDate}>
         Applied on: {formatAppliedDate(item.created_at)}
       </Text>
@@ -113,16 +121,16 @@ const styles = StyleSheet.create({
   jobTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#1e282c',
   },
   company: {
     fontSize: 16,
-    color: '#666',
+    color: '#1e282c',
     marginBottom: 8,
   },
   appliedDate: {
     fontSize: 14,
-    color: '#999',
+    color: '#1e282c',
   },
 });
 

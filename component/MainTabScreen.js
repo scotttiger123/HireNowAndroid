@@ -17,7 +17,7 @@ const Stack = createStackNavigator();
 function MainTabScreen() {
   return (
     <Tab.Navigator
-      initialRouteName="Jobs"
+      initialRouteName="Live Jobs"
       activeColor="#f0edf6"
       inactiveColor="#3e2465"
       barStyle={{ backgroundColor: '#694fad' }}

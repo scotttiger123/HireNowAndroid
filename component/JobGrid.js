@@ -44,7 +44,7 @@ const JobGrid = () => {
   const searchJobs = async () => {
     try {
       setIsLoading(true); // Set loading to true while searching
-      console.log(selectedJobType);
+      //console.log(selectedJobType);
       
       const apiUrl = `https://hirenow.site/api/search-jobs-filter?keywords=${searchText}&location=${locationText}${
         selectedJobType ? `&selectedJobType=${selectedJobType}` : ''
@@ -79,14 +79,15 @@ const JobGrid = () => {
   
   
   const renderItem = ({ item }) => {
-    const skillsArray = item.skillsRequired.split(',').map(skill => skill.trim());
-    const jobLocation = JSON.parse(item.jobLocation);
+    
+    const skillsArray = item.skillsRequired ? item.skillsRequired.split(',').map(skill => skill.trim()) : [];
+    const jobLocation = item.jobLocation ? JSON.parse(item.jobLocation) : [];
     const location = Array.isArray(jobLocation) ? jobLocation[0] : '';
     
     const capitalizeEachWord = (str) => {
+      if (!str) return ''; // Check if str is null or undefined, return empty string if so
       return str.replace(/\b\w/g, c => c.toUpperCase());
     };
-
   
   const companyName = capitalizeEachWord(item.company);
   const jobTitle = capitalizeEachWord(item.jobTitle);
@@ -132,7 +133,7 @@ const JobGrid = () => {
             </View>
           </View>
           <Card.Divider />
-          <Text>{item.jobDescription.substring(0, 50)}...</Text>
+          <Text style = {{ color:'#1e282c'}}>{item.jobDescription.substring(0, 50)}...</Text>
         </Card>
       </TouchableOpacity>
     );
@@ -160,7 +161,7 @@ const JobGrid = () => {
       setSelectedSalary(processedValue);
     }
     
-    searchJobs();
+    //searchJobs();
   };
   const mapStringToSalaryValue = (stringValue) => {
     switch (stringValue) {
@@ -237,16 +238,19 @@ const JobGrid = () => {
         searchJobs={searchJobs}
       />
 
-      {isLoading ? (
-        <ActivityIndicator style={{ marginTop: 20 }} size="large" color="#164081" />
-      ) : (
-        <FlatList
-          style={{ flex: 1 }}
-          data={jobs}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-        />
-      )}
+        {isLoading ? (
+          <ActivityIndicator style={{ marginTop: 20 }} size="large" color="#164081" />
+        ) : jobs.length === 0 ? (
+          <Text style={styles.noJobsText}>No job found</Text>
+        ) : (
+          <FlatList
+            style={{ flex: 1 }}
+            data={jobs.slice(0, 20)}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+          />
+        )}
+
     <Modal isVisible={isModalVisible} style={styles.modal} backdropOpacity={0.3}>
         <View style={styles.modalContent }>
           <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
@@ -257,7 +261,7 @@ const JobGrid = () => {
               <Card.Title>{selectedJob.jobTitle}</Card.Title>
               <Card.Divider />
               <ScrollView style={styles.descriptionContainer}>
-                <Text>{selectedJob.jobDescription}</Text>
+                <Text style = {{ color: '#1e282c'}} >{selectedJob.jobDescription}</Text>
 
                 <Card.Divider style={styles.secondDivider} /> 
          
@@ -300,6 +304,17 @@ const renderTableRow = (label, value) => (
   </View>
 );
 const styles = StyleSheet.create({
+  noJobsText: {
+    color: '#1e282c',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+  },
+  
+  detailText:{
+    color: '#1e282c',
+  },
   companyText: {
     fontSize: 14,
     fontWeight: 'bold', 
@@ -310,6 +325,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     flexWrap: 'wrap', 
     marginTop: 5, 
+    color: 'black',
   },
 
   // Style for each individual skill
@@ -338,6 +354,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    color: 'black',
   },
   tableHeader: {
     fontSize: 12,
@@ -380,6 +397,7 @@ const styles = StyleSheet.create({
   modal: {
     margin: 0,
     justifyContent: 'flex-end',
+    color: '#1e282c',
   },
   modalContent: {
     backgroundColor: 'white',
@@ -391,7 +409,8 @@ const styles = StyleSheet.create({
   descriptionContainer: {
     maxHeight: '70%', // Set the maximum height for the description
     borderRadius: 5,
-    marginBottom :10
+    marginBottom :10,
+    color:'#1e282c'
   },
   closeButton: {
     position: 'absolute',

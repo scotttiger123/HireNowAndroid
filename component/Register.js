@@ -65,18 +65,28 @@ const RegisterPage = ({ navigation }) => {
   return (
     <View style={styles.container}>
       {/* Placeholder for logo image */}
+      <View style={styles.imageContainger}>
       <Image
         style={styles.logo}
         source={require('./images/logo.png')} // Replace with your actual logo image path
         resizeMode="contain"
       />
-
+      </View>
+      <View style={styles.labelContianer}>
+              <Text style={styles.label}>Full Name</Text>
+          </View>
+      <View style={styles.inputContainer}>
       <TextInput
         style={styles.input}
         placeholder="Full Name"
         value={fullName}
         onChangeText={(text) => setFullName(text)}
       />
+      </View>
+      <View style={styles.labelContianer}>
+              <Text style={styles.label}>Email</Text>
+          </View>
+      <View style={styles.inputContainer}>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -84,6 +94,11 @@ const RegisterPage = ({ navigation }) => {
         value={email}
         onChangeText={(text) => setEmail(text)}
       />
+      </View>
+      <View style={styles.labelContianer}>
+              <Text style={styles.label}>Phone</Text>
+          </View>
+      <View style={styles.inputContainer}>
       <TextInput
         style={styles.input}
         placeholder="Phone"
@@ -91,6 +106,11 @@ const RegisterPage = ({ navigation }) => {
         value={phone}
         onChangeText={(text) => setPhone(text)}
       />
+      </View>
+      <View style={styles.labelContianer}>
+              <Text style={styles.label}>Password</Text>
+          </View>
+      <View style={styles.inputContainer}>
       <TextInput
         style={styles.input}
         placeholder="Password"
@@ -98,6 +118,11 @@ const RegisterPage = ({ navigation }) => {
         value={password}
         onChangeText={(text) => setPassword(text)}
       />
+      </View>
+      <View style={styles.labelContianer}>
+              <Text style={styles.label}>Confirm Password</Text>
+          </View>
+      <View style={styles.inputContainer}>
       <TextInput
         style={styles.input}
         placeholder="Confirm Password"
@@ -105,6 +130,7 @@ const RegisterPage = ({ navigation }) => {
         value={confirmPassword}
         onChangeText={(text) => setConfirmPassword(text)}
       />
+      </View>
       <TouchableOpacity style={styles.registerButton} onPress={handleRegister} disabled={isLoading}>
         {isLoading ? (
           <ActivityIndicator size="small" color="white" /> 
@@ -141,12 +167,32 @@ const RegisterPage = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  inputContainer: {
+    flexDirection: 'row',
+   
+  },
+  labelContianer:{
+    alignItems: 'right',
+  },
+  
+  label: {
+    fontWeight: 'bold',
+    color: '#1e282c',
+    margin:5,
+  },
+  imageContainger: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 20, // Reduced top padding
+
+  },
     container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20, // Reduced top padding
-        backgroundColor: 'white', // Set white background
+      backgroundColor: 'white',
+      flex: 1,
+      // justifyContent: 'center',
+      // alignItems: 'center',
+      padding: 20, // Reduced top padding
+      backgroundColor: 'white', // Set white background
       },
       logo: {
         width: 150, // Set width of the logo image
@@ -160,16 +206,30 @@ const styles = StyleSheet.create({
       },
       input: {
         width: '100%',
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        borderRadius: 8,
-        marginBottom: 12,
-        padding: 8,
+        width: '100%',
+    height: 40,
+    color: '#333',
+    borderRadius: 8,
+    padding: 10,
+    margin:5,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+    // Add a bottom shadow
+    borderBottomWidth: 2,
+    borderBottomColor: '#164081',
       },
   registerButton: {
-    backgroundColor: '#164081',
+    backgroundColor: '#164081', // Set button color to #164081
     padding: 10,
+    margin:5,
+    marginTop:10,
     borderRadius: 8,
     width: '100%',
     alignItems: 'center',
@@ -183,7 +243,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   loginText: {
+    marginLeft:15,
     fontSize: 14,
+    color: '#333',
+    
   },
   loginLink: {
     fontSize: 14,
@@ -215,6 +278,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
+  
 
 });
 

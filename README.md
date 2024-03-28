@@ -92,14 +92,14 @@ npm install react-native-fetch-blob //file uploading
 cd android
 ./gradlew clean
 ./gradlew assemblerelease
+npx react-native build-android --mode=release
 
-cd android
-./gradlew clean
+
 cd ..
 npx react-native run-android  // For new built after installation 
 
 
-//====https://www.youtube.com/watch?v=l3CZmXtEe_Y&t=178s==//
+//====https://www.youtube.com/watch?v=l3CZmXtEe_Y&t=178s==// CREATE APK
 
 
 //=========================For ICONS ======================== // 
@@ -131,6 +131,12 @@ sendmail to smtp    (vise versa)
 
 ===================
 https://www.youtube.com/watch?v=HrzMwThTfJo
+
+
+
+
+
+
 
 
 

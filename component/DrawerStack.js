@@ -47,7 +47,11 @@ const CustomDrawerContent = (props) => {
   return (
     <DrawerContentScrollView {...props} style={styles.drawerContent}>
       <View style={styles.headerContainer}>
-        <Image style={styles.profileImage} source={require('./images/logo.png')} />
+        <Image
+          style={styles.profileImage}
+          source={require('./images/logo.png')}
+          resizeMode="contain" 
+        />
         <Text style={styles.headerText}>{userName}</Text>
       </View>
       <DrawerItemList {...props} />
@@ -74,7 +78,7 @@ const MainTabScreen = () => (
       component={JobGrid}
       options={{
         tabBarLabel: 'Live Jobs',
-        tabBarIcon: ({ color }) => <Icon name="search" color={color} size={26} />,
+        tabBarIcon: ({ color }) => <Icon name="search" color="#3e2465" size={26} />,
       }}
     />
     <Tab.Screen
@@ -82,7 +86,7 @@ const MainTabScreen = () => (
       component={Profile}
       options={{
         tabBarLabel: 'My Profile',
-        tabBarIcon: ({ color }) => <Icon name="person" color={color} size={26} />,
+        tabBarIcon: ({ color }) => <Icon name="person" color="#3e2465" size={26} />,
       }}
     />
     <Tab.Screen
@@ -90,17 +94,17 @@ const MainTabScreen = () => (
       component={AppliedJobsGrid}
       options={{
         tabBarLabel: 'Applied Jobs',
-        tabBarIcon: ({ color }) => <Icon name="assignment" color={color} size={26} />,
+        tabBarIcon: ({ color }) => <Icon name="assignment" color="#3e2465" size={26} />,
       }}
     />
-    <Tab.Screen
+    {/* <Tab.Screen
       name="Notifications"
       component={NotificationScreen}
       options={{
         tabBarLabel: 'Notifications',
-        tabBarIcon: ({ color }) => <Icon name="notifications" color={color} size={26} />,
+        tabBarIcon: ({ color }) => <Icon name="notifications" color="#3e2465" size={26} />,
       }}
-    />
+    /> */}
   </Tab.Navigator>
 );
 

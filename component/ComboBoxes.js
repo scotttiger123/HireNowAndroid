@@ -217,6 +217,8 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
     width: 150,
+    color:'#1e282c',
+    
   },
   pickerWrapper: {
     backgroundColor: '#CCCCCC',
@@ -238,6 +240,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   pickerItem: {
+    backgroundColor: '#CCCCCC',
     fontSize: 12,
     color: '#333',
   },

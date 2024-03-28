@@ -41,17 +41,18 @@ const ApplyJobPage = () => {
     }
   }, []);
   const handleNext = () => {
-    if (
-      formData.education.toLowerCase() === 'yes' &&
-      formData.experience.toLowerCase() === 'yes' &&
-      formData.ageRequirements.toLowerCase() === 'yes'
-    ) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      setModalMessage('You are not meeting the job requirements');
-      setModalVisible(true);
-      console.log('Please select "Yes" for all options');
-    }
+    setCurrentStep(currentStep + 1); // pending for now 
+    // if (
+    //   formData.education.toLowerCase() === 'yes' &&
+    //   formData.experience.toLowerCase() === 'yes' &&
+    //   formData.ageRequirements.toLowerCase() === 'yes'
+    // ) {
+    //   setCurrentStep(currentStep + 1);
+    // } else {
+    //   setModalMessage('You are not meeting the job requirements');
+    //   setModalVisible(true);
+    //   console.log('Please select "Yes" for all options');
+    // }
   };
 
   const handlePrevious = () => {
