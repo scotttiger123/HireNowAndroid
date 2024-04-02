@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet,ActivityIndicator  } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -8,7 +8,7 @@ const AppliedJobGrid = () => {
   const route = useRoute();
   const [userId, setUserId] = useState(null);
   const [appliedJobs, setAppliedJobs] = useState([]);
-
+  const [isLoading, setIsLoading] = useState(true); // Add isLoading state
   useEffect(() => {
     const getUserIdFromStorage = async () => {
       try {
@@ -26,9 +26,11 @@ const AppliedJobGrid = () => {
   }, []);
 
   useEffect(() => {
+    
     console.log('Fetching applied jobs for UserId:', userId);
     const fetchAppliedJobs = async () => {
       try {
+        setIsLoading(true); 
         const response = await fetch(`https://hirenow.site/api/job-applications/${userId}`);
         const data = await response.json();
         console.log(data);
@@ -37,8 +39,10 @@ const AppliedJobGrid = () => {
         } else {
           console.error('Failed to fetch applied jobs:', data.message);
         }
+        setIsLoading(false); // Set loading to false after fetching
       } catch (error) {
         console.error('Error fetching applied jobs:', error.message);
+        setIsLoading(false); 
       }
     };
 
@@ -81,7 +85,21 @@ const AppliedJobGrid = () => {
     const date = new Date(dateString);
     return date.toDateString();
   };
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#164081" />
+      </View>
+    );
+  }
 
+  if (appliedJobs.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.pageTitle}>No jobs applied</Text>
+      </View>
+    );
+  }
   return (
     <View style={styles.container}>
       <Text style={styles.pageTitle}>Applied Jobs</Text>

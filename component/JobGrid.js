@@ -24,10 +24,14 @@ const JobGrid = () => {
   const [locationText, setLocationText] = useState('');
   const [isLoading, setIsLoading] = useState(false); // Add isLoading state
   const navigation = useNavigation();
-  useEffect(() => { 
-    fetchData();
-  }, []);
   
+  useEffect(() => {
+    fetchData(); // Fetch data when component mounts
+  }, []);
+
+  useEffect(() => {
+    searchJobs(); // Call searchJobs whenever search criteria change
+  }, [searchText, locationText, selectedJobType, selectedPostedBy, selectedDatePosted, selectedSalary]);
 
   const fetchData = async () => {
     try {
@@ -139,6 +143,16 @@ const JobGrid = () => {
     );
   };
  
+  const closeModalNavigate = () => {
+    setSelectedJob(null);
+    setModalVisible(false);
+  };
+
+  const handleApplyButton = () => {
+    closeModalNavigate(); // Close modal when navigating to ApplyJobPage
+    navigation.navigate('ApplyJobPage', { job: selectedJob });
+    
+  };
 
   const updateSelectedValues = (value, filterType) => {
     let processedValue = value;
@@ -285,10 +299,7 @@ const JobGrid = () => {
                   </View>
               </ScrollView>
               
-              <Button
-                title="Apply"
-                onPress={() => navigation.navigate('ApplyJobPage', { job: selectedJob })}
-              />
+              <Button title="Apply" onPress={handleApplyButton} />
             </Card>
           )}
         </View>

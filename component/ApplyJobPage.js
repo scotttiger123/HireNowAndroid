@@ -184,6 +184,7 @@ const ApplyJobPage = () => {
     setModalMessage('Please select any one CV.');
     setModalVisible(true);
   };
+
   
   return (
    
@@ -231,7 +232,7 @@ const ApplyJobPage = () => {
           {/* Step 1 Form Fields - Education */}
           {job.qualification !== 'no' && (
           <View style={styles.questionContainer}>
-              <Text style={styles.questionText}>Do you have {job.qualification }?</Text>
+              {/* <Text style={styles.questionText}>Do you have {job.qualification }?</Text>
                 <View style={styles.radioButtonsWrapper}>
                   <TouchableOpacity
                     style={formData.education === 'Yes' ? styles.radioButtonSelected : styles.radioButton}
@@ -245,7 +246,7 @@ const ApplyJobPage = () => {
                   >
                     <Text style={styles.radioLabel}>No</Text>
                   </TouchableOpacity>
-                </View>
+                </View> */}
           </View>
           )} 
 

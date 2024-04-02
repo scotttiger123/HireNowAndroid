@@ -127,7 +127,7 @@ const JobGridStack = () => (
     }}
   >
     <Drawer.Screen 
-      name="Jobs" 
+      name="Jobs Live" 
       component={MainTabScreen} 
       options={{
         drawerIcon: ({ color }) => (
@@ -157,6 +157,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+    color:'#1e282c'
   },
   profileImage: {
     width: 40,
