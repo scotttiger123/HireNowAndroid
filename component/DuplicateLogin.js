@@ -12,10 +12,10 @@ const LoginPage = ({ navigation }) => {
   const handleLogin = async () => {
     try {
       setLoading(true);
-      const apiUrl = `https://hirenow.site/api/loginApp?email=${username}&password=${password}`;
+      const apiUrl = `https://hirenow.site/api/loginAppEmployer?email=${username}&password=${password}`;
       const response = await fetch(apiUrl);
       const responseData = await response.json();
-
+      console.log(responseData);  
       if (responseData.success) {
         console.log('Login successful:', responseData);
         await AsyncStorage.setItem('userId', responseData.user.id.toString());
@@ -33,8 +33,6 @@ const LoginPage = ({ navigation }) => {
             navigation.navigate('JobGridStack', { userName: responseData.user.name , userId: responseData.user.id});
           }
     
-
-
         }, 2000);
 
       } else {
@@ -52,16 +50,20 @@ const LoginPage = ({ navigation }) => {
       setLoading(false);
     }
   };
+
   const handleForgotPassword = () => {
     // Navigate to the forgot password screen
     navigation.navigate('ForgotPassword');
   };
+
   return (
     <View style={styles.container}>
-        <View style={styles.imageContainger}>
+      <View style={styles.imageContainger}>
           <Image style={styles.logo} source={require('./images/logo.png')} resizeMode="contain" />
-        </View>
-          <View style={styles.labelContianer}>
+          <Text style={styles.title}>Employers Portal</Text>
+       </View>
+      
+      <View style={styles.labelContianer}>
               <Text style={styles.label}>User Name</Text>
           </View>
           <View style={styles.inputContainer}>
@@ -85,7 +87,6 @@ const LoginPage = ({ navigation }) => {
         onChangeText={(text) => setPassword(text)}
       />
       </View>
-      
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         {loading ? (
           <ActivityIndicator color="white" />
@@ -93,9 +94,9 @@ const LoginPage = ({ navigation }) => {
           <Text style={styles.buttonText}>Login</Text>
         )}
       </TouchableOpacity>
-      <Text style={styles.forgotPasswordLink} onPress={handleForgotPassword}>
-        Forgot Password?
-      </Text>    
+
+      
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -115,6 +116,9 @@ const LoginPage = ({ navigation }) => {
         </View>
       </Modal>
 
+      <Text style={styles.forgotPasswordLink} onPress={handleForgotPassword}>
+        Forgot Password?
+      </Text>    
       <View style={styles.registerContainer}>
         <Text style={styles.registerText}>Don't have an account? </Text>
         <TouchableOpacity onPress={() => navigation.navigate('Registration')}>
@@ -126,13 +130,13 @@ const LoginPage = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  
   forgotPasswordLink:{
     marginLeft:15,
     fontSize: 14,
     fontSize: 14,
     color: '#164081', // Set link color to #164081
     fontWeight: 'bold',
-    paddingTop:5
   },
   inputContainer: {
     flexDirection: 'row',
@@ -221,6 +225,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
+    color: '#333',
   },
   placeholder: {
     color: '#1e282c',
