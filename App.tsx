@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Linking } from 'react-native';
+import { Linking,View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal, Alert } from 'react-native';
 
 import LoginScreen from './component/LoginScreen';
 import JobGridStack from './component/DrawerStack'; 
@@ -14,13 +14,26 @@ import MainTabScreen from './component/MainTabScreen';
 import ForgotPassword from './component/ForgotPassword'; 
 import ChangePasswordScreen from './component/ChangePasswordScreen';
 import DuplicateLogin from './component/DuplicateLogin';
+import CreateJob from './component/CreateJob';
+import PostedJobsGrid from './component/PostedJobsGrid';
+import EditJobScreen from './component/EditJobScreen';
+import ViewApplicationsScreen from './component/ViewApplicationsScreen';
+import Applications from './component/Applications'; 
+import PostJobForm from './component/CreateJob'; 
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import WelcomePage from './component/WelcomePage';
+import PostCompanyProfile from './component/PostCompanyProfile';
+import RegisterEmployerScreen from './component/RegisterEmployerScreen';
+
+// import BottomSheet from './component/BottomSheet'; 
+
 
 const Stack = createStackNavigator();
 
 
 function App() {
 
-   const [initialRoute, setInitialRoute] = useState('Login');
+   const [initialRoute, setInitialRoute] = useState('JobGridStack');
   const [token, setToken] = useState('');
   const [email, setEmail] = useState('');
 
@@ -34,7 +47,7 @@ function App() {
           handleDeepLink(deepLink);
         } else {
           console.log('Setting initial route to Login');
-          setInitialRoute('Login');
+          setInitialRoute('JobGridStack');
         }
       } catch (error) {
         console.error('Error fetching initial route:', error);
@@ -75,7 +88,7 @@ function App() {
             <Stack.Screen name={initialRoute}>
               {(props) => <ChangePasswordScreen {...props} token={token} email={email} />}
             </Stack.Screen>
-            <Stack.Screen name="DuplicateLogin" component={DuplicateLogin} />
+            
             <Stack.Screen name="JobGridStack" component={JobGridStack} />
             <Stack.Screen name="MainTabScreen" component={MainTabScreen} />
             <Stack.Screen name="JobDetailsScreen" component={JobDetailsScreen} />
@@ -83,11 +96,16 @@ function App() {
             <Stack.Screen name="Registration" component={Register} />
             <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} /> 
             <Stack.Screen name="ForgotPassword" component={ForgotPassword} /> 
+            <Stack.Screen name="CreateJob" component={CreateJob} />
+            <Stack.Screen name="PostedJobsGrid" component={PostedJobsGrid} />
+            <Stack.Screen name="EditJobScreen" component={EditJobScreen} />
+            <Stack.Screen name="ViewApplicationsScreen" component={ViewApplicationsScreen} />
+            <Stack.Screen name="Applications" component={Applications} /> 
+            <Stack.Screen name="DuplicateLogin" component={DuplicateLogin} />
             
           </React.Fragment>
-        ) : (
+        ) : ( 
           <>
-            <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="JobGridStack" component={JobGridStack} />
             <Stack.Screen name="MainTabScreen" component={MainTabScreen} />
             <Stack.Screen name="JobDetailsScreen" component={JobDetailsScreen} />
@@ -95,6 +113,61 @@ function App() {
             <Stack.Screen name="Registration" component={Register} />
             <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} /> 
             <Stack.Screen name="ForgotPassword" component={ForgotPassword} /> 
+            <Stack.Screen name="CreateJob" component={CreateJob} />
+            <Stack.Screen name="PostedJobsGrid" component={PostedJobsGrid} />
+            <Stack.Screen name="EditJobScreen" component={EditJobScreen} />
+            <Stack.Screen name="ViewApplicationsScreen" component={ViewApplicationsScreen} />
+            <Stack.Screen name="Applications" component={Applications} /> 
+            <Stack.Screen name="WelcomePage" component={WelcomePage} /> 
+            <Stack.Screen name="Login" component={LoginScreen} 
+            
+            
+            options={({ navigation }) => ({
+              headerShown: true,
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                  <Icon name="arrow-back" size={24} color="#694fad" style={{ marginLeft: 10 }} />
+                </TouchableOpacity>
+              ),
+              headerTitle: '', // Empty string to remove the title
+            })}
+          />
+            <Stack.Screen name="PostJobForm" component={PostJobForm}  
+            options={({ navigation }) => ({
+              headerShown: true,
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                  <Icon name="arrow-back" size={24} color="#694fad" style={{ marginLeft: 10 }} />
+                </TouchableOpacity>
+              ),
+              headerTitle: '', // Empty string to remove the title
+            })}
+          />
+          <Stack.Screen name="PostCompanyProfile" component={PostCompanyProfile}  
+            options={({ navigation }) => ({
+              headerShown: true,
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                  <Icon name="arrow-back" size={24} color="#694fad" style={{ marginLeft: 10 }} />
+                </TouchableOpacity>
+              ),
+              headerTitle: '', // Empty string to remove the title
+            })}
+          />
+          <Stack.Screen name="RegisterEmployerScreen" component={RegisterEmployerScreen}  
+            options={({ navigation }) => ({
+              headerShown: true,
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                  <Icon name="arrow-back" size={24} color="#694fad" style={{ marginLeft: 10 }} />
+                </TouchableOpacity>
+              ),
+              headerTitle: '', // Empty string to remove the title
+            })}
+          />
+            {/* <Stack.Screen name="BottomSheet" component={BottomSheet} /> */}
+
+            
           </>
         )}
       </Stack.Navigator>

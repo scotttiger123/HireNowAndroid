@@ -6,7 +6,7 @@ import { Picker } from '@react-native-picker/picker';
 
 const ComboBoxes = ({ updateSelectedValues, searchJobs }) => {
   
-  const [selectedJobType, setSelectedJobType] = useState(null);
+  const [selectedJobType, setSelectedJobType] = useState();
   const [selectedPostedBy, setSelectedPostedBy] = useState(null);
   const [selectedDatePosted, setSelectedDatePosted] = useState(null);
   const [selectedSalary, setSelectedSalary] = useState(null);
@@ -89,8 +89,10 @@ const ComboBoxes = ({ updateSelectedValues, searchJobs }) => {
   ];
 
   const employerStaffingOptions = [
-    { label: 'Employer', value: data.employerCount },
-    { label: 'Staffing', value: data.staffingAgencyCount },
+    //{ label: 'Employer', value: data.employerCount },
+    //{ label: 'Staffing', value: data.staffingAgencyCount },
+    { label: 'Employer', value: 1230 },
+    { label: 'Staffing', value:  1430 },
   ];
 
   const salaryRangeOptions = [
@@ -110,21 +112,45 @@ const ComboBoxes = ({ updateSelectedValues, searchJobs }) => {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
       <View style={styles.container}>
+        
+      <View style={styles.comboBox}>
+          {data && (
+            <View style={[styles.pickerWrapper, selectedJobType === 'Job Type' && styles.selectedCombo]}>
+              <Picker
+                selectedValue={selectedJobType}
+                
+                
+                onValueChange={onJobTypeChange}
+                style={{width: 160, height: 100}} itemStyle={{height: 100,fontSize:12}}>
+              
+                <Picker.Item label="Job Type" value="" style={styles.pickerItem} />
+                {jobTypeOptions.map((option, index) => (
+                  <Picker.Item
+                    key={index}
+                    label={`${option.label} (${option.value})`}
+                    value={option.label}
+                    style={{flex:1}}
+                  />
+                ))}
+              </Picker>
+            </View>
+          )}
+        </View>
         <View style={styles.comboBox}>
           {data && (
             <View style={[styles.pickerWrapper, selectedJobType === 'Date Posted' && styles.selectedCombo]}>
               <Picker
                 selectedValue={selectedDatePosted}
                 onValueChange={onDatePostedChange}
-                style={styles.picker}
-              >
-                <Picker.Item label="Date Posted" value="" style={styles.pickerItem} />
+                
+                style={{width: 160, height: 100}} itemStyle={{height: 100,fontSize:12}}>
+                <Picker.Item label="Date Posted" value=""  />
                 {postedDateOptions.map((option, index) => (
                   <Picker.Item
                     key={index}
                     label={`${option.label} (${option.value})`}
                     value={option.label}
-                    style={styles.pickerItem}
+                    style={{flex:1}}
                   />
                 ))}
               </Picker>
@@ -138,15 +164,15 @@ const ComboBoxes = ({ updateSelectedValues, searchJobs }) => {
               <Picker
                 selectedValue={selectedPostedBy}
                 onValueChange={onPostedByChange}
-                style={styles.picker}
-              >
+                style={{width: 160, height: 100}} itemStyle={{height: 100,fontSize:12}}>
+              
                 <Picker.Item label="Posted by" value="" style={styles.pickerItem} />
                 {employerStaffingOptions.map((option, index) => (
                   <Picker.Item
                     key={index}
                     label={`${option.label} (${option.value})`}
                     value={option.label}
-                    style={styles.pickerItem}
+                    style={{flex:1}}
                   />
                 ))}
               </Picker>
@@ -160,15 +186,15 @@ const ComboBoxes = ({ updateSelectedValues, searchJobs }) => {
               <Picker
                 selectedValue={selectedSalary}
                 onValueChange={onSalaryChange}
-                style={styles.picker}
-              >
+                style={{width: 160, height: 100}} itemStyle={{height: 100,fontSize:12}}>
+              
                 <Picker.Item label="Salary Range" value="" style={styles.pickerItem} />
                 {salaryRangeOptions.map((option, index) => (
                   <Picker.Item
                     key={index}
                     label={`${option.label} (${option.value})`}
                     value={option.label}
-                    style={styles.pickerItem}
+                    style={{flex:1}}
                   />
                 ))}
               </Picker>
@@ -176,29 +202,7 @@ const ComboBoxes = ({ updateSelectedValues, searchJobs }) => {
           )}
         </View>
 
-        <View style={styles.comboBox}>
-          {data && (
-            <View style={[styles.pickerWrapper, selectedJobType === 'Job Type' && styles.selectedCombo]}>
-              <Picker
-                selectedValue={selectedJobType}
-                
-                
-                onValueChange={onJobTypeChange}
-                style={styles.picker}
-              >
-                <Picker.Item label="Job Type" value="" style={styles.pickerItem} />
-                {jobTypeOptions.map((option, index) => (
-                  <Picker.Item
-                    key={index}
-                    label={`${option.label} (${option.value})`}
-                    value={option.label}
-                    style={styles.pickerItem}
-                  />
-                ))}
-              </Picker>
-            </View>
-          )}
-        </View>
+
       </View>
     </ScrollView>
   );
@@ -206,44 +210,29 @@ const ComboBoxes = ({ updateSelectedValues, searchJobs }) => {
 
 const styles = StyleSheet.create({
   scrollView: {
-    maxHeight: 50,
+    maxHeight: 80,
   },
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginHorizontal: 16,
+    marginHorizontal: 2,
   },
-  comboBox: {
-    flex: 1,
-    marginRight: 8,
-    width: 150,
-    color:'#1e282c',
-    
-  },
+ 
   pickerWrapper: {
-    backgroundColor: '#CCCCCC',
-    borderRadius: 8,
+  
+    borderRadius: 10, // Slightly rounded corners
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    height: 30,
+    //borderWidth: 1,
+   // borderColor: '#b896d9', // Adjusted to a lighter shade of the same color (#694fad)
+  
+    height: 80,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 1,
+    marginLeft:12
   },
-  selectedCombo: {
-    borderColor: 'blue', // Change border color or add any other styling to indicate selection
-  },
-  picker: {
-    flex: 1,
-    color: '#333',
-    height: 30,
-  },
-  pickerItem: {
-    backgroundColor: '#CCCCCC',
-    fontSize: 12,
-    color: '#333',
-  },
+  
 });
+
 
 export default ComboBoxes;

@@ -1,5 +1,5 @@
 import React, { useState ,useEffect} from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Button,ScrollView ,Modal} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Button,ScrollView ,Modal,Alert,Linking} from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import DocumentPicker from 'react-native-document-picker';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -40,8 +40,14 @@ const ApplyJobPage = () => {
       setFormData({ ...formData, ageRequirements: 'Yes' });
     }
   }, []);
-  const handleNext = () => {
+  const handleNext = () => { 
+    if (job.job_google_link) {
+    console.log(job.job_google_link);
+    Linking.openURL(job.job_google_link);
+    return;
+  }
     setCurrentStep(currentStep + 1); // pending for now 
+    
     // if (
     //   formData.education.toLowerCase() === 'yes' &&
     //   formData.experience.toLowerCase() === 'yes' &&
@@ -190,41 +196,42 @@ const ApplyJobPage = () => {
    
     <View style={styles.container}>
       <View style={styles.header}>
-        
-        
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Text>
+         <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Text>
               <Icon name="arrow-back" size={30} color="black" />
             </Text>
           </TouchableOpacity>
       </View>
 
-      <View style={styles.jobTitleContainer}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.jobTitle}>{job.jobTitle}</Text>
-            <Text style={styles.tableHeader}>Job Description</Text>
-        <Text style={styles.jobDescription}>{job.jobDescription}</Text>
-        {/* Job Details Table */}
-        <View style={styles.table}>
+      
+
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.jobTitleContainer}>
+          <Text style={styles.jobTitle}>{job.jobTitle}</Text>
+       </View>    
           
-          {/* Rows for job details */}
-          {renderTableRow('Total Positions', job.numPositions !== null ? job.numPositions : 'N/A')}
-          {renderTableRow('Job Shift', job.job_shift !== null && job.job_shift !== 'N/A' ? job.job_shift : 'N/A')}
-          {renderTableRow('Job Type', job.job_type !== null ? (job.job_type === 'full_time' ? 'Full Time' : (job.job_type === 'part_time' ? 'Part Time' : 'N/A')) : 'N/A')}
-          {renderTableRow('Gender', job.genderPreference !== null ? job.genderPreference : 'N/A')}
-          {renderTableRow('Minimum Education', job.qualification !== null ? job.qualification : 'N/A')}
-          {renderTableRow('Career Level', job.careerLevel !== null ? job.careerLevel : 'N/A')}
-          {renderTableRow('Experience', job.minExperience !== null && job.minExperience > 0 && job.maxExperience !== null && job.maxExperience > 0
-            ? `${job.minExperience} to ${job.maxExperience}`
-            : 'N/A')}
-          {renderTableRow('Age', job.minAge !== null && job.minAge > 0 && job.maxAge !== null && job.maxAge > 0
-            ? `${job.minAge} to ${job.maxAge}`
-            : 'N/A')}
-          {renderTableRow('Apply Before', job.apply_by_date !== null ? job.apply_by_date : 'N/A')}
-          {renderTableRow('Posting Date', job.created_at !== null ? job.created_at : 'N/A')}
-        </View>
-      </ScrollView>  
-      </View>
+          {/* Job Details Table */}
+          <View style={styles.table}>
+            
+            {/* Rows for job details */}
+            {renderTableRow('Total Positions', job.numPositions !== null ? job.numPositions : 'N/A')}
+            {renderTableRow('Job Shift', job.job_shift !== null && job.job_shift !== 'N/A' ? job.job_shift : 'N/A')}
+            {renderTableRow('Job Type', job.job_type !== null ? (job.job_type === 'full_time' ? 'Full Time' : (job.job_type === 'part_time' ? 'Part Time' : 'N/A')) : 'N/A')}
+            {renderTableRow('Gender', job.genderPreference !== null ? job.genderPreference : 'N/A')}
+            {renderTableRow('Minimum Education', job.qualification !== null ? job.qualification : 'N/A')}
+            {renderTableRow('Career Level', job.careerLevel !== null ? job.careerLevel : 'N/A')}
+            {renderTableRow('Experience', job.minExperience !== null && job.minExperience > 0 && job.maxExperience !== null && job.maxExperience > 0
+              ? `${job.minExperience} to ${job.maxExperience}`
+              : 'N/A')}
+            {renderTableRow('Age', job.minAge !== null && job.minAge > 0 && job.maxAge !== null && job.maxAge > 0
+              ? `${job.minAge} to ${job.maxAge}`
+              : 'N/A')}
+            {renderTableRow('Apply Before', job.apply_by_date !== null ? new Date(job.apply_by_date).toLocaleDateString() : 'N/A')}
+            {renderTableRow('Posting Date', job.created_at !== null ? new Date(job.created_at).toLocaleDateString() : 'N/A')}
+            <Text style={styles.jobDescription}>{job.jobDescription}</Text>
+          </View>
+        </ScrollView>  
+      
       {currentStep === 1 && (
         <View>
           
@@ -400,7 +407,7 @@ const styles = StyleSheet.create({
     borderColor: 'black', // Adjust the color as needed
   },
   profileButton: {
-    backgroundColor: '#3498db', // Adjust the color as needed
+    backgroundColor: '#694fad', // Adjust the color as needed
     padding: 1,
     borderRadius: 5,
     flexDirection: 'row',
@@ -445,7 +452,7 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: '#164081',
+    backgroundColor: '#694fad',
     padding: 10,
     borderRadius: 5,
     color: 'white',
@@ -492,6 +499,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
+    marginTop:20,
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
@@ -538,28 +546,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'black',
   },
-  jobTitleContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+  jobTitleContainer: { 
+    
     padding: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    marginBottom: 10,
+        marginBottom: 10,
     width: '100%',
     flex: 1,
-    maxHeight:'60%'
+    maxHeight:'60%',
+    alignItems: 'center',backgroundColor: '#fff',
   },
   jobTitle: {
+    paddingTop:10,
+    textTransform: 'uppercase',
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'black',
-    backgroundColor: '#F2F2F2',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    color: '#b896d9',
     fontFamily: 'Tahoma',
   },
   jobDescription: {
@@ -610,9 +613,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scrollContainer: {
-    flexGrow: 1,
+    flexGrow: 1,borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
   },
-
+  separator: {
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
+    marginVertical: 10,
+  },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -632,7 +641,7 @@ const styles = StyleSheet.create({
     color: 'black', // You can set the text color to your preference
   },
   modalButton: {
-    backgroundColor: '#164081',
+    backgroundColor: '#694fad',
     padding: 10,
     borderRadius: 8,
     width: '100%',

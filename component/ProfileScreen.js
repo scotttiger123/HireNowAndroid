@@ -6,7 +6,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import getCsrfToken from './csrfTokenUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-
+import { useFocusEffect } from '@react-navigation/native';
 
 const ProfileScreen = () => {
   const [headline, setHeadLine] = useState('');
@@ -16,12 +16,12 @@ const ProfileScreen = () => {
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
 
-  const [loading, setLoading] = useState(false);
+  
   
   const [isSummaryModalVisible, setIsSummaryModalVisible] = useState(false);
   const [summary, setSummary] = useState('');
 
-  const [workExperience, setWorkExperience] = useState('Company A - Position A\nCompany B - Position B');
+
   const [jobTitle, setJobTitle] = useState('');
   const [company, setCompany] = useState('');
   const [fromDate, setFromDate] = useState('');
@@ -29,18 +29,7 @@ const ProfileScreen = () => {
   const [description, setDescription] = useState('');
 
 
-
-  const [education, setEducation] = useState('University X - Degree X\nCollege Y - Degree Y');
-  
-    const [educationDetails, setEducationDetails] = useState({
-        level: '',
-        fieldOfStudy: '',
-        schoolName: '',
-        cityedu: '',
-        from: '',
-        to: '',
-    });
-   
+ 
     
   const [isEducationModalVisible, setIsEducationModalVisible] = useState(false);
   const [level, setLevel] = useState('');
@@ -66,7 +55,7 @@ const ProfileScreen = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+  
   const [isWorkExperienceModalVisible, setIsWorkExperienceModalVisible] = useState(false);
   
   
@@ -122,10 +111,16 @@ const ProfileScreen = () => {
   const handleSaveCertification  = async () => {
 
     try {
+
+      const storedUserId = await AsyncStorage.getItem('userId');
+        if (!storedUserId) {
+          Alert.alert('Please log in to create profile.');
+        return;
+      }
       setIsSaving(true); // Set loading to true while saving
     
       const csrfToken = await getCsrfToken();
-      const storedUserId = await AsyncStorage.getItem('userId');
+      
       const formData = new FormData();
     
     formData.append('user_id', storedUserId);
@@ -163,10 +158,17 @@ const ProfileScreen = () => {
   const handleSaveEducation = async () => {
     
     try {
+
+      const storedUserId = await AsyncStorage.getItem('userId');
+        if (!storedUserId) {
+          Alert.alert('Please log in to create profile.');
+        return;
+      }
+
       setIsSaving(true); 
 
       const csrfToken = await getCsrfToken();
-      const storedUserId = await AsyncStorage.getItem('userId');
+      
       const formData = new FormData();
     
       formData.append('user_id', storedUserId);
@@ -229,11 +231,12 @@ const ProfileScreen = () => {
     setShowFromDatePicker(false);
   };
   
-  const handleCertificationEndDateConfirm = (date) => {
+  const handleCertificationEndDateConfirm = (date) => { console.log('alert');
     console.log('Selected end date:', date);
     console.log('Formatted end date:', date.toISOString().split('T')[0]);
     setCertificationEndDate(date.toISOString().split('T')[0]);
     setShowToDatePicker(false);
+    console.log('alert');
   };
   
   // Function to handle date confirmation for the 'to' date
@@ -250,20 +253,29 @@ const ProfileScreen = () => {
     postalCode: '',
     headline: '',
   });
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const csrfToken = await getCsrfToken();
-        const storedUserId = await AsyncStorage.getItem('userId');
-        await fetchDefaultProfileInfo(storedUserId, csrfToken);
-      } catch (error) {
-        console.error('Error fetching profile information:', error.message);
+  
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, [])
+  );
+  
+  const fetchData = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      if (!userId) {
+        clearData();
+        
+        return;
       }
-    };
-  
-    fetchData();
-  }, []);
-  
+
+      const csrfToken = await getCsrfToken();
+      await fetchDefaultProfileInfo(userId, csrfToken);
+    } catch (error) {
+      console.error('Error fetching profile information:', error.message);
+    }
+  };
 
   const fetchDefaultProfileInfo = async (userId, csrfToken) => {
     try {
@@ -274,12 +286,13 @@ const ProfileScreen = () => {
                 'X-CSRF-TOKEN': csrfToken,
             },
         });
-
+        
         if (!response) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         
         const responseData = await response.json();
+        
         const profileData = responseData.data; // Accessing the nested 'data' object
         setSelectedDocument(profileData.profile_image);
 
@@ -291,7 +304,7 @@ const ProfileScreen = () => {
         setCity(profileData.city);
         setPostalCode(profileData.postal_code);
         setSummary(profileData.summary);
-    
+        
         // Update profileInfo object with the fetched data
         setProfileInfo({
           ...profileInfo, // Preserve existing profileInfo properties
@@ -313,12 +326,28 @@ const ProfileScreen = () => {
         throw error; // Propagate the error to the caller
     }
 };
+const clearData = () => {
+  setProfileInfo({});
+  setSelectedDocument(null);
+  setHeadLine('');
+  setName('');
+  setEmail('');
+  setPhone('');
+  setCity('');
+  setPostalCode('');
+  setSummary('');
+};
 
 const handleSaveSkill = async () => { 
   try { 
+    const storedUserId = await AsyncStorage.getItem('userId');
+      if (!storedUserId) {
+          Alert.alert('Please log in to create profile.');
+        return;
+      }
         setIsSaving(true);
         const csrfToken = await getCsrfToken();
-        const storedUserId = await AsyncStorage.getItem('userId');
+        
         const formData = new FormData();
         
         formData.append('user_id', storedUserId);
@@ -353,10 +382,16 @@ const handleSaveSkill = async () => {
 
 const handleSaveWorkExperience = async () => {
   try {
+
+    const storedUserId = await AsyncStorage.getItem('userId');
+    if (!storedUserId) {
+          Alert.alert('Please log in to create profile.');
+      return;
+    }
     setIsSaving(true);
     
     const csrfToken = await getCsrfToken();
-    const storedUserId = await AsyncStorage.getItem('userId');
+    
     const formData = new FormData();
 
     formData.append('user_id', storedUserId);
@@ -399,6 +434,11 @@ const handleSaveWorkExperience = async () => {
 
   const handleDocumentSelectAndSave = async () => {
     try {
+      const storedUserId = await AsyncStorage.getItem('userId');
+      if (!storedUserId) {
+          Alert.alert('Please log in to create profile.');
+          return;
+        }
         const csrfToken = await getCsrfToken();
         const result = await DocumentPicker.pick({
           type: [DocumentPicker.types.allFiles],
@@ -409,7 +449,7 @@ const handleSaveWorkExperience = async () => {
         formData.append('profile_image', base64Data);
         formData.append('extension', fileData.type.split('/')[1]); // Append the file extension
         
-        const storedUserId = await AsyncStorage.getItem('userId');
+        
         formData.append('user_id', storedUserId);
   
         const apiUrl = 'https://hirenow.site/api/save-profile-image';
@@ -455,9 +495,14 @@ const handleSaveWorkExperience = async () => {
 
   const handleSaveProfile = async () => {
     try {
+      const storedUserId = await AsyncStorage.getItem('userId');
+        if (!storedUserId) {
+          Alert.alert('Please log in to create profile.');
+        return;
+      }
       setIsSaving(true); 
       const csrfToken = await getCsrfToken();
-      const storedUserId = await AsyncStorage.getItem('userId');
+      
       const formData = new FormData();
       
       
@@ -511,9 +556,14 @@ const handleSaveWorkExperience = async () => {
   
   const handleSaveSummary = async () => {
     try {
+      const storedUserId = await AsyncStorage.getItem('userId');
+        if (!storedUserId) {
+          Alert.alert('Please log in to create profile.');
+        return;
+      }
       setIsSaving(true);
       const csrfToken = await getCsrfToken();
-      const storedUserId = await AsyncStorage.getItem('userId');
+      
       const formData = new FormData();
       
       formData.append('user_id', storedUserId);
@@ -733,11 +783,11 @@ const handleSaveWorkExperience = async () => {
                     {profileInfo && Array.isArray(profileInfo.workExperiences) && profileInfo.workExperiences.map((experience, index) => (
                       
                       <View key={index} style={styles.experienceContainer}>
+                         <TouchableOpacity onPress={() => handleDeleteCertification('candidate_work_experiences',experience.id)} style={styles.deleteButton}>
                           <View style={styles.deleteButtonContainer}>
-                            <TouchableOpacity onPress={() => handleDeleteCertification('candidate_work_experiences',experience.id)} style={styles.deleteButton}>
                               <Icon name="trash" size={18} color="gray" />
-                            </TouchableOpacity>
                           </View>
+                          </TouchableOpacity>
                                 <View style={styles.fieldContainer}>
                                   <Text style={styles.label}>Job Title:</Text>
                                   <Text style={styles.text}>{experience.job_title}</Text>
@@ -804,23 +854,27 @@ const handleSaveWorkExperience = async () => {
                     </View> 
                     <View style={styles.dateInputContainer}>
                       <TouchableOpacity onPress={handleFromDatePress}>
+                      <View  onTouchEnd={handleFromDatePress}>
                         <TextInput
                           style={[styles.modalInput, styles.dateInput]}
                           placeholder="From Date"
                           value={fromDate}
                           editable={false}
                         />
+                        </View>
                       </TouchableOpacity>
                       <View style={styles.labelContianer}>
                                 <Text style={styles.label}>To Date</Text>
                       </View> 
                       <TouchableOpacity onPress={handleToDatePress}>
+                      <View  onTouchEnd={handleToDatePress}>
                         <TextInput
                           style={[styles.modalInput, styles.dateInput]}
                           placeholder="To Date"
                           value={toDate}
                           editable={false}
                         />
+                        </View>
                       </TouchableOpacity>
                     </View>
                     <DateTimePickerModal
@@ -869,12 +923,14 @@ const handleSaveWorkExperience = async () => {
         <Text style={styles.header}>Education</Text>
         {profileInfo && Array.isArray(profileInfo.educations) && profileInfo.educations.map((education, index) => (
           <View key={index} style={styles.experienceContainer}>
-                <View style={styles.deleteButtonContainer}>
+                
                   {/* Delete Button with Icon */}
                   <TouchableOpacity onPress={() => handleDeleteCertification('candidate_educations',education.id)} style={styles.deleteButton}>
-                    <Icon name="trash" size={18} color="gray" />
+                    <View style={styles.deleteButtonContainer}>
+                      <Icon name="trash" size={18} color="gray" />
+                    </View>
                   </TouchableOpacity>
-                </View>
+                
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Level of Education:</Text>
                   <Text style={styles.text}>{education.edu_level_of_education}</Text>
@@ -964,23 +1020,27 @@ const handleSaveWorkExperience = async () => {
                 </View>
                 <View style={styles.dateInputContainer}>
                   <TouchableOpacity onPress={handleFromDatePress}>
+                  <View  onTouchEnd={handleFromDatePress}>
                     <TextInput
                       style={[styles.modalInput, styles.dateInput]}
                       placeholder="From Date"
                       value={fromDate}
                       editable={false}
                     />
+                    </View>
                   </TouchableOpacity>
                   <View style={styles.labelContianer}>
                     <Text style={styles.label}>To Date</Text>
                   </View>
                   <TouchableOpacity onPress={handleToDatePress}>
+                  <View  onTouchEnd={handleToDatePress}>
                     <TextInput
                       style={[styles.modalInput, styles.dateInput]}
                       placeholder="To Date"
                       value={toDate}
                       editable={false}
                     />
+                    </View>
                   </TouchableOpacity>
                 </View>
                 <DateTimePickerModal
@@ -1016,12 +1076,14 @@ const handleSaveWorkExperience = async () => {
         <Text style={styles.header}>Skills</Text>
             {profileInfo && Array.isArray(profileInfo.skills) && profileInfo.skills.map((skill, index) => (
               <View key={index} style={styles.experienceContainer}>
-                <View style={styles.deleteButtonContainer}>
+                
                   {/* Delete Button with Icon */}
                   <TouchableOpacity onPress={() => handleDeleteCertification('candidate_skills',skill.id)} style={styles.deleteButton}>
-                    <Icon name="trash" size={18} color="gray" />
+                    <View style={styles.deleteButtonContainer}>
+                      <Icon name="trash" size={18} color="gray" />
+                    </View>
                   </TouchableOpacity>
-                </View>
+                
                 <View style={styles.fieldContainer}>
                     <Text style={styles.label}>Skill</Text>
                     <Text style={styles.text}>{skill.skill_name}</Text>
@@ -1096,12 +1158,14 @@ const handleSaveWorkExperience = async () => {
       {/* Display existing certifications/licenses */}
       {profileInfo && Array.isArray(profileInfo.certifications) && profileInfo.certifications.map((certification, index) => (
         <View key={index} style={styles.experienceContainer}>
-          <View style={styles.deleteButtonContainer}>
+          
             {/* Delete Button with Icon */}
             <TouchableOpacity onPress={() => handleDeleteCertification('candidate_certifications',certification.id)} style={styles.deleteButton}>
-              <Icon name="trash" size={18} color="gray" />
+              <View style={styles.deleteButtonContainer}>
+                <Icon name="trash" size={18} color="gray" />
+              </View>
             </TouchableOpacity>
-          </View>
+          
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>Certification/License </Text>
             <Text style={styles.text}>{certification.certificate_name}</Text>
@@ -1143,23 +1207,27 @@ const handleSaveWorkExperience = async () => {
               <Text style={styles.label}>From Date</Text>
             </View>
              <TouchableOpacity onPress={handleFromDatePress}>
+             <View  onTouchEnd={handleFromDatePress}>
                 <TextInput
                 style={[styles.modalInput, styles.dateInput]}
                 placeholder="From Date"
                 value={certificationStartDate}
                 editable={false}
               />
+              </View>
              </TouchableOpacity> 
              <View style={styles.labelContianer}>
               <Text style={styles.label}>To Date</Text>
             </View>
-            <TouchableOpacity onPress={handleToDatePress}>
+            <TouchableOpacity onPress={handleToDatePress} >
+            <View  onTouchEnd={handleToDatePress}>
               <TextInput
                 style={[styles.modalInput, styles.dateInput]}
                 placeholder="To Date"
                 value={certificationEndDate}
                 editable={false}
               />
+              </View>
               </TouchableOpacity>
             
              
@@ -1184,7 +1252,7 @@ const handleSaveWorkExperience = async () => {
                       isVisible={showToDatePicker}
                       mode="date"
                       onConfirm={handleCertificationEndDateConfirm} 
-                      onCancel={() => setShowToDatePicker(false)}
+                      onCancel={() => setShowToDatePicker(false)``}
                     />
             <View style={styles.modalButtonsContainer}>
               <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setIsCertificationModalVisible(false)}>
@@ -1219,9 +1287,14 @@ deleteButtonContainer: {
   position: 'absolute',
   top: 5,
   right: 5,
+  
+  
+   //borderWidth: 1, // Border width
+   //borderColor: 'black', // Border color
+   //borderStyle: 'solid', // Border style
 },
 deleteButton: {
-  padding: 5,
+  
   borderRadius: 5,
 },
 text: {
@@ -1352,7 +1425,7 @@ text: {
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: '#164081',
+    backgroundColor: '#694fad',
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 5,

@@ -58,7 +58,7 @@ const AppliedJobGrid = () => {
   }, [userId],[navigation]);
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity
+    <View
       style={styles.jobItem}
       onPress={() => {
         console.log('Selected Job ID:', item.id);
@@ -78,37 +78,33 @@ const AppliedJobGrid = () => {
       <Text style={styles.appliedDate}>
         Applied on: {formatAppliedDate(item.created_at)}
       </Text>
-    </TouchableOpacity>
+    </View>
   );
 
   const formatAppliedDate = (dateString) => {
     const date = new Date(dateString);
     return date.toDateString();
   };
-  if (isLoading) {
-    return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color="#164081" />
-      </View>
-    );
-  }
-
-  if (appliedJobs.length === 0) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.pageTitle}>No jobs applied</Text>
-      </View>
-    );
-  }
+  
   return (
     <View style={styles.container}>
-      <Text style={styles.pageTitle}>Applied Jobs</Text>
-      <FlatList
-        data={appliedJobs}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        numColumns={1} // Change to 2 if you want a multi-column layout
-      />
+      {isLoading ? (
+        <View style={[styles.container, styles.loadingContainer]}>
+          <ActivityIndicator size="large" color="#164081" />
+        </View>
+      ) : appliedJobs.length === 0 ? (
+        <Text style={styles.pageTitle}>No jobs applied</Text>
+      ) : (
+        <>
+          <Text style={styles.pageTitle}>Applied Jobs</Text>
+          <FlatList
+            data={appliedJobs}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            numColumns={1} // Change to 2 if you want a multi-column layout
+          />
+        </>
+      )}
     </View>
   );
 };
@@ -123,7 +119,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#333',
+    color: '#694fad',
   },
   jobItem: {
     padding: 20,
