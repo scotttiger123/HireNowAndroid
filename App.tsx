@@ -23,6 +23,7 @@ import PostJobForm from './component/CreateJob';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import WelcomePage from './component/WelcomePage';
 import PostCompanyProfile from './component/PostCompanyProfile';
+import ProfileScreen from './component/ProfileScreen';
 import RegisterEmployerScreen from './component/RegisterEmployerScreen';
 
 // import BottomSheet from './component/BottomSheet'; 
@@ -165,6 +166,18 @@ function App() {
               headerTitle: '', // Empty string to remove the title
             })}
           />
+          <Stack.Screen name="ProfileScreen" component={ProfileScreen}  
+            options={({ navigation }) => ({
+              headerShown: true,
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                  <Icon name="arrow-back" size={24} color="#694fad" style={{ marginLeft: 10 }} />
+                </TouchableOpacity>
+              ),
+              headerTitle: '', // Empty string to remove the title
+            })}
+          />
+
             {/* <Stack.Screen name="BottomSheet" component={BottomSheet} /> */}
 
             

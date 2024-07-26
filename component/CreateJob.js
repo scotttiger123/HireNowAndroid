@@ -1,11 +1,11 @@
 import React, { useState,useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal, Alert,Image  } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal, Alert,Image,  Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getCsrfToken from './csrfTokenUtil';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useNavigation } from '@react-navigation/native';
-
+import { CheckBox } from 'react-native-elements';
 
 const positionsData = [...Array(35).keys()].map(i => (i + 1).toString()).concat('35+');
 const ukCities = [
@@ -42,6 +42,8 @@ const PostJobForm = () => {
   
   const [salaryFrom, setSalaryFrom] = useState('');
   const [salaryTo, setSalaryTo] = useState('');
+  const [salaryType, setSalaryType] = useState('Hourly');
+  
   const [shouldShowSalary, setShouldShowSalary] = useState(true);
   const [showDatePicker, setShowDatePicker] = useState(false);
   
@@ -61,7 +63,15 @@ const PostJobForm = () => {
   const [contactNumber, setContactNumber] = useState('');
   const navigation = useNavigation(); // useNavigation hook
   const [userId, setUserId] = useState(null);
+  const [isChecked, setIsChecked] = useState(false);
 
+  const handleCheckboxToggle = () => {
+    setIsChecked(!isChecked);
+  };
+
+  const openTermsAndConditions = () => {
+    Linking.openURL('https://hirenow.site/term-and-conditions');
+  };
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -79,6 +89,7 @@ const PostJobForm = () => {
 
     fetchUserId();
   }, []);
+
 
   const fetchUserDetails = async (userId) => {
     try {
@@ -192,6 +203,7 @@ const PostJobForm = () => {
           requiredQualification,
           salaryFrom,
           salaryTo,
+          salaryType,
           shouldShowSalary,
           minExp,
           maxExp,
@@ -287,7 +299,7 @@ const PostJobForm = () => {
               <Picker
                 selectedValue={requiredCareerLevel}
                 onValueChange={(itemValue) => setRequiredCareerLevel(itemValue)}
-                style={{ height: 100}} itemStyle={{height: 100,fontSize:14}}>
+                style={{ height: 50}} itemStyle={{height: 100,fontSize:14}}>
                 
                 <Picker.Item label="Entry Level" value="entry" />
                 <Picker.Item label="Mid Level" value="mid" />
@@ -300,7 +312,7 @@ const PostJobForm = () => {
             <Picker
               selectedValue={numPositions}
               onValueChange={(itemValue) => setNumPositions(itemValue)}
-              style={{ height: 100}} itemStyle={{height: 100,fontSize:14}}>
+              style={{ height: 50}} itemStyle={{height: 100,fontSize:14}}>
 
                 {[0, ...positionsData].map((value) => (
                   <Picker.Item key={value} label={value.toString()} value={value.toString()} />
@@ -312,7 +324,7 @@ const PostJobForm = () => {
             <Picker
               selectedValue={jobLocation}
               onValueChange={(itemValue) => setJobLocation(itemValue)}
-              style={{ height: 100}} itemStyle={{height: 100,fontSize:14}}>
+              style={{ height: 50}} itemStyle={{height: 100,fontSize:14}}>
             
               {ukCities.map((city) => (
                 <Picker.Item key={city} label={city} value={city} />
@@ -339,13 +351,26 @@ const PostJobForm = () => {
                     keyboardType="numeric"
                   />
                 </View>
-
+                <Text style={styles.label}>Salary Type*</Text>
+                  <View style={[styles.pickerContainer]}>
+                    <Picker
+                      selectedValue={salaryType}
+                      onValueChange={(value) => setSalaryType(value)}
+                      style={{ height: 50}} itemStyle={{height: 100,fontSize:14}}>
+                    
+                      <Picker.Item label="Daily" value="Daily" />
+                      <Picker.Item label="Weekly" value="Weekly" />
+                      <Picker.Item label="Monthly" value="Monthly" />
+                      <Picker.Item label="Hourly" value="Hourly" />
+                      <Picker.Item label="Annually" value="Annually" />
+                    </Picker>
+                  </View>    
             <Text style={styles.label}>Job Type *</Text>
             <View style={[styles.pickerContainer]}>
             <Picker
               selectedValue={jobType}
               onValueChange={(itemValue) => setJobType(itemValue)}
-              style={{ height: 100}} itemStyle={{height: 100,fontSize:14}}>
+              style={{ height: 50}} itemStyle={{height: 100,fontSize:14}}>
 
               <Picker.Item label="Full Time" value="Full Time" />
               <Picker.Item label="Part Time" value="Part Time" />
@@ -359,7 +384,7 @@ const PostJobForm = () => {
             <Picker
               selectedValue={jobShift}
               onValueChange={(itemValue) => setJobShift(itemValue)}
-              style={{ height: 100}} itemStyle={{height: 100,fontSize:14}}>
+              style={{ height: 50}} itemStyle={{height: 100,fontSize:14}}>
             
               
               <Picker.Item label="Morning" value="Morning" />
@@ -383,7 +408,7 @@ const PostJobForm = () => {
                 <Text style={[styles.radioButtonText, !shouldShowSalary ? styles.radioButtonTextSelected : null]}>No</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Apply By Date*</Text>
+            <Text style={styles.label}>Apply Before Date*</Text>
             <TouchableOpacity onPress={handleToDatePress}>
             <View  onTouchEnd={handleToDatePress}>
               <TextInput
@@ -413,7 +438,7 @@ const PostJobForm = () => {
               <Picker
                   selectedValue={requiredQualification}
                   onValueChange={(itemValue) => setRequiredQualification(itemValue)}
-                  style={{ height: 100}} itemStyle={{height: 100,fontSize:14}}>
+                  style={{ height: 50}} itemStyle={{height: 100,fontSize:14}}>
 
                   <Picker.Item label="Not Require" value="" />
                   <Picker.Item label="High School" value="High School" />
@@ -486,6 +511,20 @@ const PostJobForm = () => {
                 onChangeText={setContactNumber}
                 keyboardType="phone-pad"
               />
+               <View style={styles.checkboxContainer}>
+                <CheckBox
+                  title={
+                    <View style={styles.checkboxLabelContainer}>
+                      <Text style={styles.checkboxLabelText}>I agree to the </Text>
+                      <TouchableOpacity onPress={openTermsAndConditions}>
+                        <Text style={styles.checkboxLabelLink}>Terms and Conditions</Text>
+                      </TouchableOpacity>
+                    </View>
+                  }
+                  checked={isChecked}
+                  onPress={handleCheckboxToggle}
+                />
+              </View>
         </ScrollView>
         );
       default:
@@ -575,7 +614,7 @@ const PostJobForm = () => {
                 ) : null}
 
                 <TouchableOpacity style={[styles.modalButton, { paddingTop: 10 }]} onPress={() => setModalVisible(false)}>
-                  <Text style={styles.buttonText}>Cancel</Text>
+                  <Text style={styles.buttonText}>Ok</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -586,6 +625,21 @@ const PostJobForm = () => {
 };
 
 const styles = StyleSheet.create({
+  checkboxContainer: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  checkboxLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkboxLabelText: {
+    color: '#000',
+  },
+  checkboxLabelLink: {
+    color: '#0000FF', // Change to your preferred link color
+    textDecorationLine: 'underline',
+  },
   pickerContainer: {
     borderColor: '#ccc',
     borderWidth: 1,

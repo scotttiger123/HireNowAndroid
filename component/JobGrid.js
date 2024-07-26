@@ -270,7 +270,10 @@ const JobGrid = () => {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               {/* Salary Range */}
               <Text style={[styles.detailText, styles.salaryText]}>
-                {item.min_salary && item.max_salary ? `£${item.min_salary} - £${item.max_salary}` : 'Salary not specified'}
+                {item.min_salary && item.max_salary ? `£${item.min_salary} - £${item.max_salary} ` : 'Salary not specified'}
+              </Text>
+              <Text style={[styles.detailText, styles.detailItem]}>
+                {item.salary_type}
               </Text>
               {/* Dot symbol */}
               <Text style={styles.dotSymbol}>•</Text>

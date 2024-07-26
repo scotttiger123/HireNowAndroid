@@ -1,14 +1,23 @@
 import React, { useState ,useEffect} from 'react';
-import { View, Text, Modal, Alert,StyleSheet, TouchableOpacity, Image ,ScrollView,TextInput,ActivityIndicator } from 'react-native';
+import { View, Text, Modal, Alert,StyleSheet, TouchableOpacity, Image ,ScrollView,TextInput,ActivityIndicator ,Platform } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
+import Video from 'react-native-video';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import getCsrfToken from './csrfTokenUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useFocusEffect } from '@react-navigation/native';
+//import defaultProfileImage from './images/default_profile.png'; // work for IOS 
+import { getStoragePermission } from './Permissions'; // Make sure to implement this
+
+
+
 
 const ProfileScreen = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const MAX_FILE_SIZE_MB = 1; // Max file size in MB
+  const defaultProfileImage = require('./images/default_profile.png'); // works for Android 
   const [headline, setHeadLine] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -61,7 +70,96 @@ const ProfileScreen = () => {
   
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
+  const [videoUri, setVideoUri] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false); // State to track video playback
+  const [loading, setLoading] = useState(false);
   
+    
+  const handleSelectVideo = async () => {
+    try {
+
+      setLoading(true); // Show loader
+
+      const storedUserId = await AsyncStorage.getItem('userId');
+
+        if (!storedUserId) {
+          Alert.alert('Please log in to create profile.');
+          setLoading(false); // Hide loader
+          return;
+        }
+      const results = await DocumentPicker.pick({
+        type: [DocumentPicker.types.video],
+      });
+      
+      
+      if (results.length > 0 && results[0].uri) {
+        //Alert.alert('Video URI:', results[0].uri);
+        const videoUri = results[0].uri;
+        
+        
+  
+        // Upload video file to backend
+        await uploadIntroVideo(videoUri);
+        setVideoUri(videoUri);
+
+      } else {
+        Alert.alert('Empty URI returned:', 'No video URI found in result.');
+      }
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        Alert.alert('User canceled the picker');
+      } else {
+        Alert.alert('Unknown error:', err.message || err.toString());
+      }
+      setLoading(false); // Hide loader
+    }
+  };
+  
+  const uploadIntroVideo = async (videoUri) => {
+    try {
+      const storedUserId = await AsyncStorage.getItem('userId');
+      if (!storedUserId) {
+        Alert.alert('Please log in to upload video.');
+        return;
+      }
+  
+      const fileName = videoUri.split('/').pop();
+      const fileType = fileName.split('.').pop();
+  
+      const formData = new FormData();
+      formData.append('intro_video', {
+        uri: videoUri,
+        name: fileName,
+        type: `video/${fileType}`,
+      });
+      formData.append('user_id', storedUserId);
+  
+      const csrfToken = await getCsrfToken();
+  
+      const response = await fetch(`https://hirenow.site/api/upload-intro-video?user_id=${storedUserId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,
+      });
+  
+      const responseData = await response.json();
+  
+      if (response.ok) {
+        Alert.alert('Video uploaded successfully!');
+      } else if (responseData.error) {
+        Alert.alert(responseData.error);
+      }
+    } catch (error) {
+      Alert.alert('Error uploading video:', error.message || error.toString());
+    } finally {
+      setLoading(false); // Hide loader
+    }
+  };
+  
+
   const handleDeleteCertification = async (tableName, id) => {
     Alert.alert(
       'Confirm Delete',
@@ -265,6 +363,7 @@ const ProfileScreen = () => {
     try {
       const userId = await AsyncStorage.getItem('userId');
       if (!userId) {
+       
         clearData();
         
         return;
@@ -279,6 +378,7 @@ const ProfileScreen = () => {
 
   const fetchDefaultProfileInfo = async (userId, csrfToken) => {
     try {
+      
         const response = await fetch(`https://hirenow.site/api/get-default-profile-info?user_id=${userId}`, {
             method: 'GET',
             headers: {
@@ -294,17 +394,32 @@ const ProfileScreen = () => {
         const responseData = await response.json();
         
         const profileData = responseData.data; // Accessing the nested 'data' object
-        setSelectedDocument(profileData.profile_image);
+        //setSelectedDocument(profileData.profile_image);
+
+         // Construct the full URL for the profile image
+        // const profileImageUrl = `https://hirenow.site/storage/profile_images/${profileData.profile_image}`;
+         // Construct the full URL for the profile image
+         const profileImageUrl = profileData.profile_image
+         ? { uri: `https://hirenow.site/storage/profile_images/${profileData.profile_image}` }
+         : defaultProfileImage;
+         setSelectedDocument(profileImageUrl);
+         //Alert.alert(profileImageUrl);
+ 
 
         console.log("profile-data",profileData.profile_image);
-        setHeadLine(profileData.headline);
-        setName(profileData.first_name);
-        setEmail(profileData.email);
-        setPhone(profileData.phone);
-        setCity(profileData.city);
-        setPostalCode(profileData.postal_code);
-        setSummary(profileData.summary);
         
+        
+        setHeadLine(profileData.headline || '');
+        setName(profileData.first_name || '');
+        setEmail(profileData.email || '');
+        setPhone(profileData.phone || '');
+        setCity(profileData.city || '');
+        setPostalCode(profileData.postal_code || '');
+        setSummary(profileData.summary || '');
+        // Set intro video URI if available
+        if (profileData.intro_video) {
+          setVideoUri(`https://hirenow.site/storage/${profileData.intro_video}`);
+        }
         // Update profileInfo object with the fetched data
         setProfileInfo({
           ...profileInfo, // Preserve existing profileInfo properties
@@ -328,14 +443,16 @@ const ProfileScreen = () => {
 };
 const clearData = () => {
   setProfileInfo({});
-  setSelectedDocument(null);
+  // setSelectedDocument(null);
   setHeadLine('');
   setName('');
   setEmail('');
   setPhone('');
   setCity('');
+ // selectedDocument('');
   setPostalCode('');
   setSummary('');
+  setVideoUri('');
 };
 
 const handleSaveSkill = async () => { 
@@ -432,60 +549,92 @@ const handleSaveWorkExperience = async () => {
 };
 
 
-  const handleDocumentSelectAndSave = async () => {
-    try {
-      const storedUserId = await AsyncStorage.getItem('userId');
-      if (!storedUserId) {
-          Alert.alert('Please log in to create profile.');
-          return;
-        }
-        const csrfToken = await getCsrfToken();
-        const result = await DocumentPicker.pick({
-          type: [DocumentPicker.types.allFiles],
-        });
-        const fileData = result[0];
-        const base64Data = await RNFetchBlob.fs.readFile(fileData.uri, 'base64');
-        const formData = new FormData();
-        formData.append('profile_image', base64Data);
-        formData.append('extension', fileData.type.split('/')[1]); // Append the file extension
-        
-        
-        formData.append('user_id', storedUserId);
-  
-        const apiUrl = 'https://hirenow.site/api/save-profile-image';
-          const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'multipart/form-data',
-              'X-CSRF-TOKEN': csrfToken,
-            },
-            body: formData,
-          });
-  
-      console.log(response);
+const handleDocumentSelectAndSave = async () => {
+  try {
+    const storedUserId = await AsyncStorage.getItem('userId');
+    if (!storedUserId) {
+      Alert.alert('Please log in to create profile.');
+      return;
+    }
 
-      if (!response) {
+    const csrfToken = await getCsrfToken();
+    const result = await DocumentPicker.pick({
+      type: [DocumentPicker.types.images],
+    });
+
+    const fileData = result[0];
+
+    // Check file size
+    if (fileData.size > MAX_FILE_SIZE_MB * 1024 * 1024) { // Convert MB to bytes
+      Alert.alert('File too large', `The file size should not exceed ${MAX_FILE_SIZE_MB} MB.`);
+      return;
+    }
+    if (Platform.OS === 'android') {
+      await getStoragePermission();
+    }
+    
+    if (fileData.uri) {
+      let base64Data;
+      if (Platform.OS === 'ios') {
+        console.log("ye he uri",fileData.uri);
+        const filePath = decodeURI(fileData.uri.replace('file://', ''));
+        base64Data = await RNFetchBlob.fs.readFile(filePath, 'base64');
+      } else {
+        
+        base64Data = await RNFetchBlob.fs.readFile(fileData.uri, 'base64');
+      }
+
+      const formData = new FormData();
+      formData.append('profile_image', base64Data);
+      formData.append('extension', fileData.type.split('/')[1]); // Append the file extension
+      formData.append('user_id', storedUserId);
+
+      const apiUrl = 'https://hirenow.site/api/save-profile-image';
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-  
+
       const responseData = await response.json();
-      console.log("save-image-response",responseData);
-      
+      console.log('save-image-response', responseData);
+      Alert.alert(JSON.stringify(responseData.message));
+
       // Update state with the selected document
       setSelectedDocument(fileData.uri);
-    } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        console.log('Document picking cancelled');
-      } else {
-        console.error('Error picking document or saving image:', err);
-      }
     }
-  };
-  const handleEdit = (section) => {
+  } catch (err) {
+    if (DocumentPicker.isCancel(err)) {
+      console.log('Document picking cancelled');
+    } else {
+      console.error('Error picking document or saving image:', err);
+      Alert.alert('Error: ' + err.message);
+    }
+  }
+};
+
+const handleEdit = async (section) => {
+  try {
+    const storedUserId = await AsyncStorage.getItem('userId');
+    if (!storedUserId) {
+      Alert.alert('Please log in to create profile.');
+      return;
+    }
     setEditingSection(section);
-    //setInitialProfileData(); 
+    // setInitialProfileData();
     setIsModalVisible(true);
-  };
+  } catch (error) {
+    console.error('Error retrieving userId from AsyncStorage:', error);
+  }
+};
+
   
   const handleCancelEdit = () => {
     setEditingSection(null); 
@@ -595,13 +744,18 @@ const handleSaveWorkExperience = async () => {
   };
   
 
- 
+   // Function to handle clicking on the video player
+   const handleVideoPress = () => {
+    setIsPlaying(!isPlaying); // Toggle video playback state
+  };
+
   return (
+    
     <ScrollView style={styles.container}>
-      {/* User Information Box */}
+     
       
       <View style={styles.userInfoContainer}>
-        
+     
               <Text style={styles.header}>Profile Information</Text>
               <View style={styles.imageContainer}>
                 {!selectedDocument ? (
@@ -623,7 +777,9 @@ const handleSaveWorkExperience = async () => {
                   >
                     <View style={styles.imageWrapper}>
                       <Image
-                        source={{ uri: selectedDocument }}
+                        //source={{ uri: selectedDocument }}
+                        source={typeof selectedDocument === 'string' ? { uri: selectedDocument } : selectedDocument}
+  
                         style={styles.image}
                       />
                     </View>
@@ -664,6 +820,49 @@ const handleSaveWorkExperience = async () => {
                 )}
 
              </View>
+           {/*  Introductory Video */}
+
+
+           <View style={styles.sectionContainer}>
+  <Text style={styles.header}>Introductory Video</Text>
+  {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : videoUri ? (
+        <TouchableOpacity onPress={() => setIsPlaying(!isPlaying)}>
+          {isPlaying ? (
+            <View style={styles.videoContainer}>
+              <Video
+                source={{ uri: videoUri }}
+                style={styles.video}
+                controls
+                paused={!isPlaying}
+              />
+            </View>
+          ) : (
+            <View style={styles.videoContainer}>
+              <Text style={styles.text}>Tap to play video</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      ) : (
+        <Text style={styles.text}>No video available</Text>
+      )}
+
+      {!loading && (
+        <TouchableOpacity
+          style={styles.uploadButton}
+          onPress={handleSelectVideo}
+        >
+          <Text style={styles.buttonText}>Upload Video</Text>
+        </TouchableOpacity>
+      )}
+</View>
+
+
+
+
+
+
           {/* Edit Profile Modal */}
             <Modal visible={isModalVisible} animationType="slide" transparent>
               <View style={styles.modalBackground}>
@@ -1265,14 +1464,78 @@ const handleSaveWorkExperience = async () => {
           </View>
         </View>
       </Modal>
-    </View>
-
+    </View> 
+    
     </ScrollView>
+   
   );
 };
 
 
 const styles = StyleSheet.create({
+
+
+  sectionContainer: {
+    marginBottom: 20,
+  },
+  header: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  text: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  editButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'blue',
+    padding: 10,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  video: {
+    width: '100%',
+    height: 200,
+    marginTop: 10,
+    backgroundColor: 'white', // Placeholder background color for video area
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  videoContainer: {
+    width: '100%',
+    height: 200,
+    marginTop: 10,
+    borderRadius: 10, // Rounded corners
+    overflow: 'hidden', // Ensure video is within rounded corners
+    backgroundColor: 'white', // Placeholder background color for video area
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+    
+  },
+  
+  text: {
+    marginTop: 10,
+    fontStyle: 'italic',
+    color: '#fff', // Text color for "Tap to play video"
+  },
+  uploadButton: {
+    marginTop: 10,
+    backgroundColor: '#694fad',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
   labelContianer: { 
    marginBottom:5,
   },
@@ -1461,4 +1724,3 @@ text: {
 });
 
 export default ProfileScreen;
-

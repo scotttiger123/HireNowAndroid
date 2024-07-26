@@ -1,11 +1,12 @@
 import React, { useState ,useEffect} from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Button,ScrollView ,Modal,Alert,Linking} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Button,ScrollView ,Modal,Alert,Linking,ActivityIndicator,Image} from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import DocumentPicker from 'react-native-document-picker';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Import MaterialIcons from react-native-vector-icons
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getCsrfToken from './csrfTokenUtil';
+import { getStoragePermission } from './Permissions'; // Make sure to implement this
 const ApplyJobPage = () => {
   const navigation = useNavigation();
   const route = useRoute();
@@ -112,8 +113,11 @@ const ApplyJobPage = () => {
     try {
       setIsLoading(true);
       const result = await DocumentPicker.pick({
-        type: [DocumentPicker.types.allFiles],
+        type: [DocumentPicker.types.pdf], // Restrict to PDF files only
       });
+      if (Platform.OS === 'android') {
+        await getStoragePermission();
+      }
       setSelectedFile(result);
       setSelectedButton('uploadCV'); // Update selectedButton state to 'uploadCV'
       setProfileSelected(false); 
@@ -146,8 +150,14 @@ const ApplyJobPage = () => {
 
       const csrfToken = await fetchCSRFToken();
       const fileData = selectedFile[0];
-      const base64Data = await RNFetchBlob.fs.readFile(fileData.uri, 'base64');
-
+      if (Platform.OS === 'ios') {
+        const filePath = decodeURI(fileData.uri.replace('file://', ''));
+        base64Data = await RNFetchBlob.fs.readFile(filePath, 'base64');
+      } else {
+        base64Data = await RNFetchBlob.fs.readFile(fileData.uri, 'base64');
+      }
+      //const base64Data = await RNFetchBlob.fs.readFile(fileData.uri, 'base64');
+      
       const apiUrl = 'https://hirenow.site/api/upload-cv';
       const formData = new FormData();
       formData.append('cv', base64Data);
@@ -168,6 +178,7 @@ const ApplyJobPage = () => {
       if (response) {
         const responseData = await response.json();
         console.log('API response: ', responseData);
+        
         setModalMessage(`${responseData.message}`);
         setModalVisible(true);
       } else {
@@ -195,6 +206,11 @@ const ApplyJobPage = () => {
   return (
    
     <View style={styles.container}>
+    {isLoading && (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    )}
       <View style={styles.header}>
          <TouchableOpacity onPress={() => navigation.goBack()}>
               <Text>
@@ -383,6 +399,9 @@ const ApplyJobPage = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
+          <Image
+                source={require('./images/submit.jpeg')}
+                style={[styles.submitImage, { resizeMode: 'contain' }]} />
             <Text style={styles.modalText}>{modalMessage}</Text>
             <TouchableOpacity
               style={styles.modalButton}
@@ -401,7 +420,17 @@ const ApplyJobPage = () => {
 };
 
 const styles = StyleSheet.create({
-  
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)', // Semi-transparent background
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000, // Ensure it is above other content
+  },
   selectedButton: {
     borderWidth: 2,
     borderColor: 'black', // Adjust the color as needed
@@ -537,6 +566,13 @@ const styles = StyleSheet.create({
     padding: 10,
     color: 'black',
     fontFamily: 'Tahoma',
+  }, submitImage: {
+    width: 120,
+    height: 140,
+    
+    margin:10
+    
+    
   },
   // Introduce new property for adjustable width
   labelWidth: {

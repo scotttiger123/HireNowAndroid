@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, Text, TouchableOpacity, StyleSheet,Alert } from 'react-native';
-import { createDrawerNavigator, DrawerItem } from '@react-navigation/drawer';
+import { View, Image, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { createDrawerNavigator, DrawerItem, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+
 import JobGrid from './JobGrid';
 import AppliedJobsGrid from './AppliedJobsGrid';
 import AccountSettingsScreen from './AccountSettingsScreen';
-import { useFocusEffect } from '@react-navigation/native';
-
 import Profile from './ProfileScreen';
-
+import ProfileCreateCandidate from './ProfileCreateCandidate';
 import PostedJobsGrid from './PostedJobsGrid';
-import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import Applications from './Applications';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginScreen from './LoginScreen';
 import CompanyProfile from './CompanyProfile';
 import WelcomePage from './WelcomePage';
@@ -20,13 +20,7 @@ import AboutUsScreen from './AboutUsScreen';
 import PrivacyPolicyScreen from './PrivacyPolicyScreen';
 import OurServicesScreen from './OurServicesScreen';
 import RegisterEmployerScreen from './RegisterEmployerScreen';
-
-
-// ...
-
-
-import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-
+import WorkerSchedule from './WorkerSchedule';
 
 const Drawer = createDrawerNavigator();
 const Tab = createMaterialBottomTabNavigator();
@@ -34,18 +28,15 @@ const Tab = createMaterialBottomTabNavigator();
 const CustomDrawerContent = (props) => {
   const { navigation, state } = props;
   const [userName, setUserName] = useState('');
-  const [userId, setUserId] = useState(null); // Add userId state
-  
+  const [userId, setUserId] = useState(null);
   const [focusedRoute, setFocusedRoute] = useState('');
-  
 
   useEffect(() => {
-    
     const unsubscribe = navigation.addListener('state', (e) => {
       const route = e.data.state.routes.find((r) => r.name === 'JobGridStack');
       if (route && route.params && route.params.userName) {
         setUserName(route.params.userName);
-        setUserId(route.params.userId); // Set userId from the route parameters
+        setUserId(route.params.userId);
         console.log();
       }
     });
@@ -54,32 +45,26 @@ const CustomDrawerContent = (props) => {
   }, [navigation]);
 
   useEffect(() => {
-    fetchData(); // Fetch data initially when the component mounts
+    fetchData();
   }, []);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('state', () => {
-      fetchData(); // Refresh data when the drawer state changes
+      fetchData();
     });
 
     return unsubscribe;
   }, [navigation]);
-  
-  
-  
-  
+
   const fetchData = async () => {
     try {
-      
       const storedUserId = await AsyncStorage.getItem('userId');
-       setUserId(storedUserId);
-      
-        
-      
+      setUserId(storedUserId);
     } catch (error) {
       console.error('Error retrieving userId from AsyncStorage:', error);
     }
   };
+
   useEffect(() => {
     const focusedRouteName = state.routes[state.index].name;
     setFocusedRoute(focusedRouteName);
@@ -87,146 +72,94 @@ const CustomDrawerContent = (props) => {
 
   const handleSignOut = async () => {
     try {
-      
       await AsyncStorage.removeItem('userId');
       await AsyncStorage.removeItem('userRegisterType');
-      
-       navigation.navigate('Login');
+      navigation.navigate('Login');
     } catch (error) {
       console.error('Error signing out:', error);
-      
     }
   };
+
   const handleSignIn = () => {
     navigation.navigate('Login');
-    
   };
- 
+
   return (
     <DrawerContentScrollView {...props} style={styles.drawerContent}>
       <View style={styles.headerContainer}>
-        <Image
-          style={styles.profileImage}
-          source={require('./images/logo.png')}
-          resizeMode="contain" 
-        />
+        <Image style={styles.profileImage} source={require('./images/logo.png')} resizeMode="contain" />
         <Text style={styles.headerText}>{userName}</Text>
       </View>
-     
-        {!userId && (
-          <View>
-            <DrawerItem
-              label="Sign in"
-              icon={() => (
-                <Icon
-                  name="person"
-                  size={26}
-                  color="#694fad" // Set default color to magenta
-                />
-              )}
-              labelStyle={{
-                color: focusedRoute === 'SignOut' ? 'white' : '#696969', // Keep text color unchanged
-              }}
-              onPress={handleSignIn}
-            />
-            <View style={styles.divider} />
-          </View>
-        )}
-      <DrawerItemList {...props} />
-      <View style={styles.divider} />
-      <DrawerItem
-        label="Sign Out"
-        icon={() => (
-          <Icon
-            name="exit-to-app"
-            size={26}
-            color="#694fad" // Set default color to magenta
+
+      {!userId && (
+        <View>
+          <DrawerItem
+            label="Sign in"
+            icon={() => <Icon name="person" size={26} color="#694fad" />}
+            labelStyle={{ color: focusedRoute === 'SignOut' ? 'white' : '#696969' }}
+            onPress={handleSignIn}
           />
-        )}
-        labelStyle={{
-          color: focusedRoute === 'SignOut' ? 'white' : '#696969', // Keep text color unchanged
+          <View style={styles.divider} />
+        </View>
+      )}
+      <DrawerItemList {...props} />
+      {userId && (
+        <>
+          <View style={styles.divider} />
+          <DrawerItem
+            label="Sign Out"
+            icon={() => <Icon name="exit-to-app" size={26} color="#694fad" />}
+            labelStyle={{ color: focusedRoute === 'SignOut' ? 'white' : '#696969' }}
+            onPress={handleSignOut}
+          />
+        </>
+      )}
+    </DrawerContentScrollView>
+  );
+};
+
+const MainTabScreen = () => {
+  return (
+    <Tab.Navigator
+      initialRouteName="Jobs"
+      shifting={true}
+      activeColor="#f0edf6"
+      inactiveColor="#3e2465"
+      barStyle={{ backgroundColor: '#694fad' }}
+    >
+      <Tab.Screen
+        name="Jobs"
+        component={JobGrid}
+        options={{
+          tabBarLabel: 'Live Jobs',
+          tabBarIcon: ({ color }) => <Icon name="search" color="#3e2465" size={26} />,
+          tabBarShowLabel: true,
         }}
-        onPress={handleSignOut}
       />
-        
-
-
-          </DrawerContentScrollView>
-        );
-      };
-     
-      const MainTabScreen = () => {
-        // const [userRegisterType, setUserRegisterType] = useState(null);
-      
-        // useEffect(() => {
-        //   fetchData(); // Fetch userRegisterType initially when the component mounts
-        // }, []);
-      
-        // // Fetch userRegisterType when the component is focused
-        // useFocusEffect(
-        //   React.useCallback(() => {
-        //     fetchData();
-        //   }, [])
-        // );
-      
-        // const fetchData = async () => {
-        //   try {
-      
-        //     // Fetch userRegisterType from AsyncStorage or any other data source
-        //     const userRegister = await AsyncStorage.getItem('userRegisterType');
-        //     const userRegisterInt = parseInt(userRegister);
-        //     setUserRegisterType(userRegisterInt);
-        //   } catch (error) {
-        //     console.error('Error fetching userRegisterType:', error);
-        //   }
-        // };
-      
-        return ( 
-          <Tab.Navigator
-            initialRouteName="Jobs"
-            shifting={true}
-            activeColor="#f0edf6"
-            inactiveColor="#3e2465"
-            barStyle={{ backgroundColor: '#694fad' }}
-          >
-            <Tab.Screen
-              name="Jobs"
-              component={JobGrid}
-              options={{
-                tabBarLabel: 'Live Jobs',
-                tabBarIcon: ({ color }) => <Icon name="search" color="#3e2465" size={26} />,
-                tabBarShowLabel: true, // Show label by default
-              }}
-            />
-              
-            <Tab.Screen
-              name="Applied Jobs"
-              component={AppliedJobsGrid}
-              options={{
-                tabBarLabel: 'Applied Jobs',
-                tabBarIcon: ({ color }) => <Icon name="assignment" color="#3e2465" size={26} />,
-                tabBarShowLabel: true, // Show label by default
-              }}
-            />
-            
-            <Tab.Screen 
-              name="Profile" 
-              component={Profile} 
-              options={{
-                tabBarLabel: 'Candidate Profile',
-                tabBarIcon: ({ color }) => <Icon name="person" color="#3e2465" size={26} />,
-                tabBarShowLabel: true, // Show label by default
-              }}
-              
-            />  
-          </Tab.Navigator>
-        );
-      };
-      
-// 
+      <Tab.Screen
+        name="Applied Jobs"
+        component={AppliedJobsGrid}
+        options={{
+          tabBarLabel: 'Applied Jobs',
+          tabBarIcon: ({ color }) => <Icon name="assignment" color="#3e2465" size={26} />,
+          tabBarShowLabel: true,
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileCreateCandidate}
+        options={{
+          tabBarLabel: 'Candidate Profile',
+          tabBarIcon: ({ color }) => <Icon name="person" color="#3e2465" size={26} />,
+          tabBarShowLabel: true,
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
 
 const Employer = () => {
-  return ( 
+  return (
     <Tab.Navigator
       initialRouteName="Jobs"
       shifting={true}
@@ -242,25 +175,17 @@ const Employer = () => {
           tabBarIcon: ({ color }) => <Icon name="add-circle-outline" color="#3e2465" size={26} />,
         }}
       />
-      <Tab.Screen 
-        name="Our Jobs" 
-        component={PostedJobsGrid} 
+      <Tab.Screen
+        name="Our Jobs"
+        component={PostedJobsGrid}
         options={{
           tabBarLabel: 'Our Jobs',
           tabBarIcon: ({ color }) => <Icon name="event" color="#3e2465" size={26} />,
         }}
       />
       <Tab.Screen
-        name="Applications"
-        component={Applications}
-        options={{
-          tabBarLabel: 'Applications',
-          tabBarIcon: ({ color }) => <Icon name="description" color="#3e2465" size={26} />,
-        }}
-      />
-      <Tab.Screen 
-        name="Company Profile" 
-        component={CompanyProfile} 
+        name="Company Profile"
+        component={CompanyProfile}
         options={{
           tabBarLabel: 'Company Profile',
           tabBarIcon: ({ color }) => <Icon name="work" color="#3e2465" size={26} />,
@@ -270,22 +195,11 @@ const Employer = () => {
   );
 };
 
-
-const handleSignInPending = () => {
-  // Your sign-in logic here
-  navigation.navigate('Login');
-  
-  
-  
-};
-
-
-
-const JobGridStack = () => {
+const JobGridStack = ({ navigation }) => {
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    fetchData(); // Fetch user data initially when the component mounts
+    fetchData();
   }, []);
 
   const fetchData = async () => {
@@ -297,9 +211,20 @@ const JobGridStack = () => {
     }
   };
 
+  const handleEmployerButtonClick = () => {
+    try {
+      if (!navigation) {
+        throw new Error('Navigation is not defined');
+      }
+      navigation.navigate('Employers/ Post a Job');
+    } catch (error) {
+      Alert.alert('Error', `Error navigating to Employers/ Post a Job: ${error.message}`);
+    }
+  };
+
   return (
     <Drawer.Navigator
-      drawerContent={(props) => <CustomDrawerContent {...props} handleSignIn={handleSignInPending}/>}
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
       initialRouteName="Jobs"
       screenOptions={{
         headerShown: true,
@@ -308,79 +233,62 @@ const JobGridStack = () => {
         headerTitleAlign: 'center',
         headerTitle: () => (
           <View style={styles.headerContainer}>
-            {/* <Image style={styles.logo} source={require('./images/logo.png')} /> */}
-            {/* <Text style={[styles.headerText, { color: '#fff' }]}>HIRE NOW</Text> */}
           </View>
-        )
+        ),
+        headerRight: () => (
+          <TouchableOpacity style={styles.headerButton} onPress={handleEmployerButtonClick}>
+            <Text style={styles.headerButtonText}>Employer</Text>
+          </TouchableOpacity>
+        ),
       }}
     >
-      <Drawer.Screen 
-        name="Job Seekers" 
+      <Drawer.Screen
+        name="Job Seekers"
         component={MainTabScreen}
         options={{
-          drawerIcon: ({ color }) => (
-            <Icon name="people" size={26} color='#694fad' />
-          ),
+          drawerIcon: ({ color }) => <Icon name="people" size={26} color='#694fad' />,
         }}
       />
-      <Drawer.Screen 
-        name="Hire Staff" 
+      <Drawer.Screen
+        name="Employers/ Post a Job"
         component={Employer}
         options={{
-          drawerIcon: ({ color }) => (
-            <Icon name="business" size={26} color='#694fad' />
-          ),
+          drawerIcon: ({ color }) => <Icon name="business" size={26} color='#694fad' />,
         }}
       />
-      <Drawer.Screen 
-        name="About Us" 
-        component={AboutUsScreen} // Replace with your About Us component
+      <Drawer.Screen
+        name="Worker Schedule"
+        component={WorkerSchedule}
         options={{
-          drawerIcon: ({ color }) => (
-            <Icon name="info" size={26} color='#694fad' /> // You can choose appropriate icon for About Us
-          ),
+          drawerIcon: ({ color }) => <Icon name="schedule" size={26} color='#694fad' />,
         }}
       />
-      <Drawer.Screen 
-        name="Privacy Policy" 
-        component={PrivacyPolicyScreen} // Replace with your Privacy Policy component
+      <Drawer.Screen
+        name="About Us"
+        component={AboutUsScreen}
         options={{
-          drawerIcon: ({ color }) => (
-            <Icon name="privacy-tip" size={26} color='#694fad' /> // You can choose appropriate icon for Privacy Policy
-          ),
+          drawerIcon: ({ color }) => <Icon name="info" size={26} color='#694fad' />,
         }}
       />
-      <Drawer.Screen 
-        name="Our Services" 
-        component={OurServicesScreen} // Replace with your Our Services component
+      <Drawer.Screen
+        name="Privacy Policy"
+        component={PrivacyPolicyScreen}
         options={{
-          drawerIcon: ({ color }) => (
-            <Icon name="business-center" size={26} color='#694fad' /> // You can choose appropriate icon for Our Services
-          ),
+          drawerIcon: ({ color }) => <Icon name="lock" size={26} color='#694fad' />,
         }}
       />
-      <Drawer.Screen 
-        name="Settings" 
-        component={AccountSettingsScreen} 
+      <Drawer.Screen
+        name="Our Services"
+        component={OurServicesScreen}
         options={{
-          drawerIcon: ({ color }) => (
-            <Icon name="settings" size={26} color='#694fad' />
-          ),
+          drawerIcon: ({ color }) => <Icon name="build" size={26} color='#694fad' />,
         }}
       />
-      {/* <Drawer.Screen 
-        name="RegisterEmployerScreen" 
-        component={RegisterEmployerScreen} 
-        options={{
-          drawerIcon: ({ color }) => (
-            <Icon name="settings" size={26} color='#694fad' />
-          ),
-        }}
-      /> */}
     </Drawer.Navigator>
   );
 };
 
+export default JobGridStack;
 
 const styles = StyleSheet.create({
   
@@ -411,6 +319,25 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     marginVertical: 8,
   },
+  headerButton: {
+    marginRight: 10,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#f0edf6',
+    borderRadius: 5,
+  },
+  headerButtonText: {
+    color: '#694fad',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  drawerContent: {
+    flex: 1,
+  },
+
+  
+
+
+
 });
 
-export default JobGridStack;
